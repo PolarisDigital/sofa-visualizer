@@ -7,6 +7,7 @@ let uploadedImageBase64 = null;
 let selectedColor = 'blu navy';
 let selectedColorName = 'Blu Navy';
 let currentUser = null;
+let outputMode = 'ambientato'; // or 'scontornato'
 
 // DOM Elements
 const imageInput = document.getElementById('imageInput');
@@ -20,6 +21,7 @@ const loadingOverlay = document.getElementById('loadingOverlay');
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     initColorSwatches();
+    initOutputToggle();
     await checkAuth();
     setupLogout();
 });
@@ -108,6 +110,18 @@ function initColorSwatches() {
             swatch.classList.add('active');
             selectedColor = swatch.dataset.name.toLowerCase();
             selectedColorName = swatch.dataset.name;
+        });
+    });
+}
+
+// Output Mode Toggle
+function initOutputToggle() {
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            outputMode = btn.dataset.mode;
         });
     });
 }
@@ -282,7 +296,8 @@ async function callGeminiAPI(prompt) {
         body: JSON.stringify({
             imageBase64: uploadedImageBase64,
             prompt: prompt,
-            userId: currentUser?.id
+            userId: currentUser?.id,
+            outputMode: outputMode // 'ambientato' or 'scontornato'
         })
     });
 

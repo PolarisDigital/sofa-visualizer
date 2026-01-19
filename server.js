@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 
 // Gemini image editing endpoint
 app.post('/api/gemini/edit', async (req, res) => {
-    const { imageBase64, prompt, apiKey } = req.body;
+    const { imageBase64, prompt, apiKey, outputMode } = req.body;
 
     // Use provided API key or environment variable
     const googleApiKey = apiKey || process.env.GOOGLE_API_KEY;
@@ -34,7 +34,7 @@ app.post('/api/gemini/edit', async (req, res) => {
     }
 
     try {
-        console.log('Processing image with Gemini...');
+        console.log('Processing image with Gemini... Mode:', outputMode || 'ambientato');
 
         const genAI = new GoogleGenerativeAI(googleApiKey);
 
@@ -46,7 +46,32 @@ app.post('/api/gemini/edit', async (req, res) => {
             }
         });
 
-        const editPrompt = `You are an expert interior designer and professional photo editor. 
+        // Build prompt based on output mode
+        let editPrompt;
+
+        if (outputMode === 'scontornato') {
+            // Isolated sofa on neutral background
+            editPrompt = `You are an expert photo editor and product photographer.
+
+I have an image of a sofa/couch. I need you to:
+1. ISOLATE the sofa from the background (remove the background completely)
+2. Place the sofa on a clean, neutral LIGHT GRAY studio background (#E5E5E5 or similar)
+3. Change the sofa upholstery: ${prompt}
+
+CRITICAL REQUIREMENTS:
+- Remove ALL background elements - room, walls, floor, other furniture
+- Place sofa on a clean, seamless light gray gradient studio background
+- Keep the EXACT same sofa shape, design and proportions
+- Change only the fabric texture and color as specified
+- Add soft, professional studio lighting
+- Add subtle soft shadow under the sofa for realism
+- OUTPUT MUST BE HIGH RESOLUTION and photorealistic quality
+- The result should look like a professional product photo for e-commerce
+
+Generate the edited image at the highest possible quality.`;
+        } else {
+            // Keep original background (ambientato)
+            editPrompt = `You are an expert interior designer and professional photo editor.
 
 I have an image of a sofa/couch. EDIT this image to change ONLY the upholstery/fabric of the sofa.
 
@@ -64,6 +89,7 @@ CRITICAL REQUIREMENTS:
 - Keep all fine details sharp and clear
 
 Generate the edited image at the highest possible quality.`;
+        }
 
         const result = await model.generateContent([
             {
