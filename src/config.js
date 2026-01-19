@@ -1,8 +1,8 @@
 // Supabase Configuration
-// Replace these values with your Supabase project credentials
+// FabricAI Project
 
-export const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-export const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+export const SUPABASE_URL = 'https://bxuhyovhezvijtwisibc.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_AKFSbO2vt3WEyZW9RZae1Q_E3j-Zb3n';
 
 // Subscription Plans
 export const PLANS = {
