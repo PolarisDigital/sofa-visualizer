@@ -1,0 +1,22 @@
+{
+    "name": "sofa-visualizer",
+    "version": "1.0.0",
+    "description": "AI-powered sofa texture and color visualizer",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@google/generative-ai": "^0.24.1",
+        "cors": "^2.8.5",
+        "express": "^5.2.1",
+        "heic2any": "^0.0.4",
+        "replicate": "^0.25.0"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0"
+    }
+}
