@@ -1,8 +1,12 @@
+// FabricAI - Main Application
+import { getSession, signOut, getRemainingGenerations, canGenerate, getUser } from './supabase.js';
+
 // State
 let uploadedImage = null;
 let uploadedImageBase64 = null;
-let selectedColor = 'rosso';
-let selectedColorName = 'Rosso';
+let selectedColor = 'blu navy';
+let selectedColorName = 'Blu Navy';
+let currentUser = null;
 
 // DOM Elements
 const imageInput = document.getElementById('imageInput');
@@ -14,9 +18,50 @@ const resultSection = document.getElementById('resultSection');
 const loadingOverlay = document.getElementById('loadingOverlay');
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initColorSwatches();
+    await checkAuth();
+    setupLogout();
 });
+
+// Auth check
+async function checkAuth() {
+    try {
+        const session = await getSession();
+        const loginBtn = document.getElementById('loginBtn');
+        const userInfo = document.getElementById('userInfo');
+        const generationsBadge = document.getElementById('generationsBadge');
+
+        if (session?.user) {
+            currentUser = session.user;
+            loginBtn.style.display = 'none';
+            userInfo.style.display = 'flex';
+
+            // Update generations badge
+            const remaining = await getRemainingGenerations(currentUser.id);
+            if (remaining === -1) {
+                generationsBadge.textContent = '∞ gen';
+            } else {
+                generationsBadge.textContent = `${remaining} gen`;
+            }
+        } else {
+            loginBtn.style.display = 'block';
+            userInfo.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Auth check error:', error);
+    }
+}
+
+function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await signOut();
+            window.location.reload();
+        });
+    }
+}
 
 // Event Listeners
 imageInput.addEventListener('change', handleImageUpload);
@@ -45,11 +90,8 @@ function initColorSwatches() {
     const swatches = document.querySelectorAll('.color-swatch');
     swatches.forEach(swatch => {
         swatch.addEventListener('click', () => {
-            // Remove active from all
             swatches.forEach(s => s.classList.remove('active'));
-            // Add active to clicked
             swatch.classList.add('active');
-            // Update selected color
             selectedColor = swatch.dataset.name.toLowerCase();
             selectedColorName = swatch.dataset.name;
         });
@@ -71,7 +113,7 @@ async function processImage(file) {
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
         try {
             const heic2any = (await import('heic2any')).default;
-            uploadBox.innerHTML = '<div class="upload-content"><div class="spinner" style="width:40px;height:40px;margin:0 auto 16px;"></div><p>Conversione immagine...</p></div>';
+            uploadBox.innerHTML = '<div class="upload-content"><div class="spinner" style="width:40px;height:40px;margin:0 auto 16px;"></div><p>Conversione...</p></div>';
 
             const convertedBlob = await heic2any({
                 blob: file,
@@ -83,19 +125,18 @@ async function processImage(file) {
                 type: 'image/jpeg'
             });
 
-            // Restore upload box
             uploadBox.innerHTML = `
                 <div class="upload-content">
                     <div class="upload-icon">📷</div>
-                    <p>Trascina un'immagine o scatta una foto del tuo divano</p>
+                    <p>Carica una foto del tuo divano</p>
                     <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-                        Carica Immagine
+                        Seleziona immagine
                     </button>
                 </div>
             `;
         } catch (err) {
             console.error('HEIC conversion error:', err);
-            alert('Impossibile convertire l\'immagine HEIC. Prova a convertirla in JPG prima.');
+            alert('Impossibile convertire l\'immagine. Prova un altro formato.');
             return;
         }
     }
@@ -105,7 +146,6 @@ async function processImage(file) {
         const img = new Image();
         img.onload = () => {
             try {
-                // Resize to max 1024px
                 const MAX_SIZE = 1024;
                 let width = img.width;
                 let height = img.height;
@@ -140,14 +180,10 @@ async function processImage(file) {
                 alert('Errore nel processare l\'immagine.');
             }
         };
-        img.onerror = () => {
-            alert('Formato immagine non supportato.');
-        };
+        img.onerror = () => alert('Formato immagine non supportato.');
         img.src = e.target.result;
     };
-    reader.onerror = () => {
-        alert('Errore nella lettura del file.');
-    };
+    reader.onerror = () => alert('Errore nella lettura del file.');
     reader.readAsDataURL(processedFile);
 }
 
@@ -163,8 +199,26 @@ function resetUpload() {
 
 async function generateImage() {
     if (!uploadedImage) {
-        alert('Carica prima un\'immagine del divano.');
+        alert('Carica prima un\'immagine.');
         return;
+    }
+
+    // Check if user is logged in
+    if (!currentUser) {
+        if (!confirm('Per generare, devi avere un account. Vuoi accedere?')) return;
+        window.location.href = '/login.html';
+        return;
+    }
+
+    // Check generation limits
+    try {
+        const canGen = await canGenerate(currentUser.id);
+        if (!canGen) {
+            alert('Hai esaurito le generazioni mensili. Passa a un piano superiore!');
+            return;
+        }
+    } catch (error) {
+        console.log('Limit check skipped:', error);
     }
 
     const fabric = document.getElementById('fabricSelect').value;
@@ -179,10 +233,13 @@ async function generateImage() {
             document.getElementById('originalThumb').src = uploadedImage;
             document.getElementById('resultImage').src = result;
             resultSection.style.display = 'block';
+
+            // Refresh generation count
+            await checkAuth();
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Errore nella generazione: ' + error.message);
+        alert('Errore: ' + error.message);
     } finally {
         loadingOverlay.style.display = 'none';
     }
@@ -190,18 +247,15 @@ async function generateImage() {
 
 function buildPrompt(fabric, color) {
     const fabricDescriptions = {
-        'microfiber': 'soft microfiber fabric',
         'velvet': 'luxurious velvet fabric',
         'leather': 'genuine leather',
         'linen': 'natural linen fabric',
+        'microfiber': 'soft microfiber fabric',
         'cotton': 'high-quality cotton fabric',
-        'eco-leather': 'premium eco-leather',
-        'chenille': 'soft chenille fabric',
         'bouclé': 'textured bouclé fabric'
     };
 
     const fabricDesc = fabricDescriptions[fabric] || fabric;
-
     return `Change the sofa upholstery to ${color} ${fabricDesc}. Keep the exact same sofa shape and background.`;
 }
 
@@ -210,28 +264,23 @@ async function callGeminiAPI(prompt) {
 
     const response = await fetch(`${BACKEND_URL}/api/gemini/edit`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             imageBase64: uploadedImageBase64,
-            prompt: prompt
+            prompt: prompt,
+            userId: currentUser?.id
         })
     });
 
     const data = await response.json();
-
-    if (!data.success) {
-        throw new Error(data.error || 'Image editing failed');
-    }
-
+    if (!data.success) throw new Error(data.error || 'Generazione fallita');
     return data.image;
 }
 
 function downloadResult() {
     const resultImage = document.getElementById('resultImage');
     const link = document.createElement('a');
-    link.download = 'divano-nuovo-tessuto.jpg';
+    link.download = 'fabricai-result.jpg';
     link.href = resultImage.src;
     link.click();
 }

@@ -19,8 +19,18 @@
 <body>
   <div class="app">
     <header class="header">
-      <h1>Fabric<span>AI</span></h1>
-      <p class="subtitle">Visualizza nuovi tessuti sul tuo divano in secondi</p>
+      <div class="header-top">
+        <div class="logo">Fabric<span>AI</span></div>
+        <div class="user-menu" id="userMenu">
+          <a href="/login.html" class="btn btn-secondary btn-small" id="loginBtn">Accedi</a>
+          <div class="user-info" id="userInfo" style="display: none;">
+            <span class="generations-badge" id="generationsBadge">3 gen</span>
+            <button class="btn btn-secondary btn-small" id="logoutBtn">Esci</button>
+          </div>
+        </div>
+      </div>
+      <h1>Visualizza nuovi tessuti</h1>
+      <p class="subtitle">Carica una foto del tuo divano e scegli un nuovo look</p>
     </header>
 
     <main class="main">

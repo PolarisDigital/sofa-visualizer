@@ -61,24 +61,58 @@ body {
 /* ==================== HEADER ==================== */
 .header {
     text-align: center;
-    padding: 48px 0 40px;
+    padding: 32px 0 40px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.logo span {
+    color: var(--accent);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.generations-badge {
+    background: var(--accent-bg);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 .header h1 {
-    font-size: 2.75rem;
+    font-size: 2.5rem;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.03em;
     margin-bottom: 12px;
 }
 
-.header h1 span {
-    color: var(--accent);
-}
-
 .subtitle {
     color: var(--text-secondary);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 400;
 }
 
