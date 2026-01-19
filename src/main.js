@@ -31,22 +31,36 @@ async function checkAuth() {
         const loginBtn = document.getElementById('loginBtn');
         const userInfo = document.getElementById('userInfo');
         const generationsBadge = document.getElementById('generationsBadge');
+        const loginRequired = document.getElementById('loginRequired');
+        const uploadContent = document.getElementById('uploadContent');
 
         if (session?.user) {
             currentUser = session.user;
             loginBtn.style.display = 'none';
             userInfo.style.display = 'flex';
 
+            // Show upload, hide login required
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (uploadContent) uploadContent.style.display = 'block';
+
             // Update generations badge
-            const remaining = await getRemainingGenerations(currentUser.id);
-            if (remaining === -1) {
-                generationsBadge.textContent = '∞ gen';
-            } else {
-                generationsBadge.textContent = `${remaining} gen`;
+            try {
+                const remaining = await getRemainingGenerations(currentUser.id);
+                if (remaining === -1) {
+                    generationsBadge.textContent = '∞ gen';
+                } else {
+                    generationsBadge.textContent = `${remaining} gen`;
+                }
+            } catch (e) {
+                generationsBadge.textContent = '3 gen';
             }
         } else {
             loginBtn.style.display = 'block';
             userInfo.style.display = 'none';
+
+            // Show login required, hide upload
+            if (loginRequired) loginRequired.style.display = 'block';
+            if (uploadContent) uploadContent.style.display = 'none';
         }
     } catch (error) {
         console.error('Auth check error:', error);
