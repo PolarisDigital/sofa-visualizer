@@ -4,11 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FabricAI - Visualizza il Tuo Divano</title>
+  <title>FabricAI - Visualizza Nuovi Tessuti</title>
   <meta name="description"
-    content="Trasforma il tuo divano con l'intelligenza artificiale. Cambia tessuto e colore in pochi secondi.">
+    content="Trasforma il tuo divano con l'intelligenza artificiale. Visualizza nuovi tessuti e colori in pochi secondi.">
   <link rel="stylesheet" href="/src/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     window.BACKEND_URL = 'https://sofa-visualizer-production.up.railway.app';
   </script>
@@ -17,8 +19,8 @@
 <body>
   <div class="app">
     <header class="header">
-      <h1>✨ FabricAI</h1>
-      <p class="subtitle">Visualizza il tuo divano con nuovi tessuti e colori</p>
+      <h1>Fabric<span>AI</span></h1>
+      <p class="subtitle">Visualizza nuovi tessuti sul tuo divano in secondi</p>
     </header>
 
     <main class="main">
@@ -28,30 +30,28 @@
           <input type="file" id="imageInput" accept="image/*" capture="environment" hidden>
           <div class="upload-content">
             <div class="upload-icon">📷</div>
-            <p>Trascina un'immagine o scatta una foto del tuo divano</p>
+            <p>Carica una foto del tuo divano</p>
             <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-              Carica Immagine
+              Seleziona immagine
             </button>
           </div>
         </div>
         <div class="preview-container" id="previewContainer" style="display: none;">
           <img id="previewImage" alt="Anteprima divano">
-          <button class="btn btn-secondary btn-small" onclick="resetUpload()">📷 Cambia foto</button>
+          <button class="btn btn-secondary btn-small" onclick="resetUpload()">Cambia foto</button>
         </div>
       </section>
 
       <!-- Options Section -->
       <section class="options-section" id="optionsSection" style="display: none;">
         <div class="option-group">
-          <label>Tipo Tessuto</label>
+          <label>Tessuto</label>
           <select id="fabricSelect">
-            <option value="microfiber">Microfibra</option>
             <option value="velvet">Velluto</option>
             <option value="leather">Pelle</option>
             <option value="linen">Lino</option>
+            <option value="microfiber">Microfibra</option>
             <option value="cotton">Cotone</option>
-            <option value="eco-leather">Eco-pelle</option>
-            <option value="chenille">Ciniglia</option>
             <option value="bouclé">Bouclé</option>
           </select>
         </div>
@@ -59,22 +59,21 @@
         <div class="option-group">
           <label>Colore</label>
           <div class="color-grid" id="colorGrid">
-            <div class="color-swatch active" data-color="#C41E3A" data-name="Rosso" style="background: #C41E3A;"></div>
-            <div class="color-swatch" data-color="#1B365D" data-name="Blu Navy" style="background: #1B365D;"></div>
-            <div class="color-swatch" data-color="#50C878" data-name="Verde Smeraldo" style="background: #50C878;">
-            </div>
-            <div class="color-swatch" data-color="#36454F" data-name="Grigio" style="background: #36454F;"></div>
-            <div class="color-swatch" data-color="#D4B896" data-name="Beige" style="background: #D4B896;"></div>
-            <div class="color-swatch" data-color="#5C4033" data-name="Marrone" style="background: #5C4033;"></div>
-            <div class="color-swatch" data-color="#FFFDD0" data-name="Panna" style="background: #FFFDD0;"></div>
-            <div class="color-swatch" data-color="#1C1C1C" data-name="Nero" style="background: #1C1C1C;"></div>
-            <div class="color-swatch" data-color="#CC5500" data-name="Arancione" style="background: #CC5500;"></div>
-            <div class="color-swatch" data-color="#7851A9" data-name="Viola" style="background: #7851A9;"></div>
+            <div class="color-swatch active" data-name="Blu Navy" style="background: #1B365D;"></div>
+            <div class="color-swatch" data-name="Verde Salvia" style="background: #9CAF88;"></div>
+            <div class="color-swatch" data-name="Rosa Cipria" style="background: #E8C4C4;"></div>
+            <div class="color-swatch" data-name="Grigio" style="background: #6B7280;"></div>
+            <div class="color-swatch" data-name="Beige" style="background: #D4B896;"></div>
+            <div class="color-swatch" data-name="Marrone" style="background: #8B6914;"></div>
+            <div class="color-swatch" data-name="Bianco" style="background: #F5F5F5; border: 1px solid #e2e8f0;"></div>
+            <div class="color-swatch" data-name="Nero" style="background: #1C1C1C;"></div>
+            <div class="color-swatch" data-name="Terracotta" style="background: #C4704E;"></div>
+            <div class="color-swatch" data-name="Blu Polvere" style="background: #B4C7DC;"></div>
           </div>
         </div>
 
         <button class="btn btn-generate" id="generateBtn" onclick="generateImage()">
-          ✨ Genera Anteprima
+          Genera anteprima
         </button>
       </section>
 
@@ -83,18 +82,18 @@
         <h2>Risultato</h2>
         <div class="comparison">
           <div class="comparison-item">
-            <span class="comparison-label">Originale</span>
+            <span class="comparison-label">Prima</span>
             <img id="originalThumb" alt="Originale">
           </div>
           <div class="comparison-arrow">→</div>
           <div class="comparison-item">
-            <span class="comparison-label">Nuovo Tessuto</span>
+            <span class="comparison-label">Dopo</span>
             <img id="resultImage" alt="Risultato">
           </div>
         </div>
         <div class="result-actions">
-          <button class="btn btn-primary" onclick="downloadResult()">💾 Salva Immagine</button>
-          <button class="btn btn-secondary" onclick="tryAgain()">🔄 Riprova</button>
+          <button class="btn btn-primary" onclick="downloadResult()">Salva immagine</button>
+          <button class="btn btn-secondary" onclick="tryAgain()">Riprova</button>
         </div>
       </section>
 
@@ -102,14 +101,14 @@
       <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="loading-content">
           <div class="spinner"></div>
-          <h3>Generazione in corso...</h3>
-          <p class="loading-hint">L'AI sta applicando il nuovo tessuto al tuo divano</p>
+          <h3>Generazione in corso</h3>
+          <p class="loading-hint">Stiamo applicando il nuovo tessuto...</p>
         </div>
       </div>
     </main>
 
     <footer class="footer">
-      <p>Powered by AI • FabricAI</p>
+      <p>Powered by AI</p>
     </footer>
   </div>
 
