@@ -28,7 +28,7 @@ railway up
 ### Configura Variabili d'Ambiente
 
 Su Railway Dashboard → Settings → Variables:
-- `GOOGLE_API_KEY` = `AIzaSyA7sINsT6-Yo0zzLx3JGDdWAh38k6t2uA0`
+- `GOOGLE_API_KEY` = `LA_TUA_API_KEY_QUI` (ottienila da Google AI Studio)
 
 Railway assegnerà automaticamente `PORT`.
 
