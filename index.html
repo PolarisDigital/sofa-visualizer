@@ -4,11 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sofa Visualizer - Test Prototipo</title>
+  <title>FabricAI - Visualizza il Tuo Divano</title>
+  <meta name="description"
+    content="Trasforma il tuo divano con l'intelligenza artificiale. Cambia tessuto e colore in pochi secondi.">
   <link rel="stylesheet" href="/src/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
-    // Backend URL - Railway deployment
     window.BACKEND_URL = 'https://sofa-visualizer-production.up.railway.app';
   </script>
 </head>
@@ -16,8 +17,8 @@
 <body>
   <div class="app">
     <header class="header">
-      <h1>🛋️ Sofa Visualizer</h1>
-      <p class="subtitle">Prova AI - Cambio Tessuto e Colore</p>
+      <h1>✨ FabricAI</h1>
+      <p class="subtitle">Visualizza il tuo divano con nuovi tessuti e colori</p>
     </header>
 
     <main class="main">
@@ -27,22 +28,22 @@
           <input type="file" id="imageInput" accept="image/*" capture="environment" hidden>
           <div class="upload-content">
             <div class="upload-icon">📷</div>
-            <p>Scatta una foto o carica un'immagine del divano</p>
+            <p>Trascina un'immagine o scatta una foto del tuo divano</p>
             <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-              Seleziona Immagine
+              Carica Immagine
             </button>
           </div>
         </div>
         <div class="preview-container" id="previewContainer" style="display: none;">
           <img id="previewImage" alt="Anteprima divano">
-          <button class="btn btn-secondary btn-small" onclick="resetUpload()">Cambia foto</button>
+          <button class="btn btn-secondary btn-small" onclick="resetUpload()">📷 Cambia foto</button>
         </div>
       </section>
 
       <!-- Options Section -->
       <section class="options-section" id="optionsSection" style="display: none;">
         <div class="option-group">
-          <label for="fabricSelect">Tipo Tessuto</label>
+          <label>Tipo Tessuto</label>
           <select id="fabricSelect">
             <option value="microfiber">Microfibra</option>
             <option value="velvet">Velluto</option>
@@ -56,47 +57,44 @@
         </div>
 
         <div class="option-group">
-          <label for="colorSelect">Colore</label>
-          <select id="colorSelect">
-            <option value="rosso" data-color="#C41E3A">Rosso</option>
-            <option value="blu navy" data-color="#1B365D">Blu Navy</option>
-            <option value="verde smeraldo" data-color="#50C878">Verde Smeraldo</option>
-            <option value="grigio antracite" data-color="#36454F">Grigio Antracite</option>
-            <option value="beige" data-color="#D4B896">Beige</option>
-            <option value="marrone cioccolato" data-color="#5C4033">Marrone Cioccolato</option>
-            <option value="bianco panna" data-color="#FFFDD0">Bianco Panna</option>
-            <option value="nero" data-color="#1C1C1C">Nero</option>
-            <option value="arancione bruciato" data-color="#CC5500">Arancione Bruciato</option>
-            <option value="viola" data-color="#7851A9">Viola</option>
-          </select>
-          <div class="color-preview" id="colorPreview"></div>
+          <label>Colore</label>
+          <div class="color-grid" id="colorGrid">
+            <div class="color-swatch active" data-color="#C41E3A" data-name="Rosso" style="background: #C41E3A;"></div>
+            <div class="color-swatch" data-color="#1B365D" data-name="Blu Navy" style="background: #1B365D;"></div>
+            <div class="color-swatch" data-color="#50C878" data-name="Verde Smeraldo" style="background: #50C878;">
+            </div>
+            <div class="color-swatch" data-color="#36454F" data-name="Grigio" style="background: #36454F;"></div>
+            <div class="color-swatch" data-color="#D4B896" data-name="Beige" style="background: #D4B896;"></div>
+            <div class="color-swatch" data-color="#5C4033" data-name="Marrone" style="background: #5C4033;"></div>
+            <div class="color-swatch" data-color="#FFFDD0" data-name="Panna" style="background: #FFFDD0;"></div>
+            <div class="color-swatch" data-color="#1C1C1C" data-name="Nero" style="background: #1C1C1C;"></div>
+            <div class="color-swatch" data-color="#CC5500" data-name="Arancione" style="background: #CC5500;"></div>
+            <div class="color-swatch" data-color="#7851A9" data-name="Viola" style="background: #7851A9;"></div>
+          </div>
         </div>
 
         <button class="btn btn-generate" id="generateBtn" onclick="generateImage()">
-          <span class="btn-icon">✨</span>
-          Genera Anteprima
+          ✨ Genera Anteprima
         </button>
       </section>
 
       <!-- Result Section -->
       <section class="result-section" id="resultSection" style="display: none;">
         <h2>Risultato</h2>
-        <div class="result-container">
-          <div class="comparison">
-            <div class="comparison-item">
-              <span class="comparison-label">Originale</span>
-              <img id="originalThumb" alt="Originale">
-            </div>
-            <div class="comparison-arrow">→</div>
-            <div class="comparison-item">
-              <span class="comparison-label">Nuovo Tessuto</span>
-              <img id="resultImage" alt="Risultato">
-            </div>
+        <div class="comparison">
+          <div class="comparison-item">
+            <span class="comparison-label">Originale</span>
+            <img id="originalThumb" alt="Originale">
           </div>
-          <div class="result-actions">
-            <button class="btn btn-primary" onclick="downloadResult()">💾 Salva Immagine</button>
-            <button class="btn btn-secondary" onclick="tryAgain()">🔄 Riprova</button>
+          <div class="comparison-arrow">→</div>
+          <div class="comparison-item">
+            <span class="comparison-label">Nuovo Tessuto</span>
+            <img id="resultImage" alt="Risultato">
           </div>
+        </div>
+        <div class="result-actions">
+          <button class="btn btn-primary" onclick="downloadResult()">💾 Salva Immagine</button>
+          <button class="btn btn-secondary" onclick="tryAgain()">🔄 Riprova</button>
         </div>
       </section>
 
@@ -104,25 +102,14 @@
       <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="loading-content">
           <div class="spinner"></div>
-          <p>Generazione in corso...</p>
-          <p class="loading-hint">L'AI sta applicando il nuovo tessuto</p>
-        </div>
-      </div>
-
-      <!-- API Key Modal -->
-      <div class="modal" id="apiKeyModal" style="display: none;">
-        <div class="modal-content">
-          <h2>🔑 API Key OpenRouter</h2>
-          <p>Per testare l'app, inserisci la tua API key di OpenRouter.</p>
-          <p class="hint">Puoi ottenerla su <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai</a></p>
-          <input type="password" id="apiKeyInput" placeholder="sk-or-v1-...">
-          <button class="btn btn-primary" onclick="saveApiKey()">Salva</button>
+          <h3>Generazione in corso...</h3>
+          <p class="loading-hint">L'AI sta applicando il nuovo tessuto al tuo divano</p>
         </div>
       </div>
     </main>
 
     <footer class="footer">
-      <p>⚠️ Prototipo di Test - Solo per valutazione fattibilità</p>
+      <p>Powered by AI • FabricAI</p>
     </footer>
   </div>
 

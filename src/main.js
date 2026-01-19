@@ -1,8 +1,8 @@
 // State
 let uploadedImage = null;
 let uploadedImageBase64 = null;
-// API key is now configured on the backend (Railway environment variable)
-// No need to store or request it from the user
+let selectedColor = 'rosso';
+let selectedColorName = 'Rosso';
 
 // DOM Elements
 const imageInput = document.getElementById('imageInput');
@@ -12,35 +12,49 @@ const previewImage = document.getElementById('previewImage');
 const optionsSection = document.getElementById('optionsSection');
 const resultSection = document.getElementById('resultSection');
 const loadingOverlay = document.getElementById('loadingOverlay');
-const colorSelect = document.getElementById('colorSelect');
-const colorPreview = document.getElementById('colorPreview');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    updateColorPreview();
+    initColorSwatches();
 });
 
 // Event Listeners
 imageInput.addEventListener('change', handleImageUpload);
-colorSelect.addEventListener('change', updateColorPreview);
 
+// Drag and drop
 uploadBox.addEventListener('dragover', (e) => {
     e.preventDefault();
-    uploadBox.style.borderColor = 'var(--primary)';
+    uploadBox.classList.add('dragover');
 });
 
 uploadBox.addEventListener('dragleave', () => {
-    uploadBox.style.borderColor = 'var(--border)';
+    uploadBox.classList.remove('dragover');
 });
 
 uploadBox.addEventListener('drop', (e) => {
     e.preventDefault();
-    uploadBox.style.borderColor = 'var(--border)';
+    uploadBox.classList.remove('dragover');
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
         processImage(file);
     }
 });
+
+// Color Swatches
+function initColorSwatches() {
+    const swatches = document.querySelectorAll('.color-swatch');
+    swatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+            // Remove active from all
+            swatches.forEach(s => s.classList.remove('active'));
+            // Add active to clicked
+            swatch.classList.add('active');
+            // Update selected color
+            selectedColor = swatch.dataset.name.toLowerCase();
+            selectedColorName = swatch.dataset.name;
+        });
+    });
+}
 
 // Functions
 function handleImageUpload(e) {
@@ -53,61 +67,45 @@ function handleImageUpload(e) {
 async function processImage(file) {
     let processedFile = file;
 
-    // Check if file is HEIC and convert it
+    // Check for HEIC format
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
         try {
-            // Dynamically import heic2any
             const heic2any = (await import('heic2any')).default;
+            uploadBox.innerHTML = '<div class="upload-content"><div class="spinner" style="width:40px;height:40px;margin:0 auto 16px;"></div><p>Conversione immagine...</p></div>';
 
-            // Show loading state
-            uploadBox.innerHTML = '<div class="upload-content"><p>Conversione HEIC in corso...</p></div>';
-
-            // Convert HEIC to JPEG blob
             const convertedBlob = await heic2any({
                 blob: file,
                 toType: 'image/jpeg',
                 quality: 0.9
             });
 
-            // Create a new File from the blob
             processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), {
                 type: 'image/jpeg'
             });
 
-            // Restore upload box content
+            // Restore upload box
             uploadBox.innerHTML = `
                 <div class="upload-content">
                     <div class="upload-icon">📷</div>
-                    <p>Scatta una foto o carica un'immagine del divano</p>
+                    <p>Trascina un'immagine o scatta una foto del tuo divano</p>
                     <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-                        Seleziona Immagine
+                        Carica Immagine
                     </button>
                 </div>
             `;
         } catch (err) {
             console.error('HEIC conversion error:', err);
-            alert('Errore nella conversione HEIC. Prova a esportare l\'immagine come JPEG dal tuo dispositivo.');
-            // Restore upload box
-            uploadBox.innerHTML = `
-                <div class="upload-content">
-                    <div class="upload-icon">📷</div>
-                    <p>Scatta una foto o carica un'immagine del divano</p>
-                    <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-                        Seleziona Immagine
-                    </button>
-                </div>
-            `;
+            alert('Impossibile convertire l\'immagine HEIC. Prova a convertirla in JPG prima.');
             return;
         }
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        // Try to load and convert image
         const img = new Image();
         img.onload = () => {
             try {
-                // Resize image to max 1024px to avoid CUDA memory errors
+                // Resize to max 1024px
                 const MAX_SIZE = 1024;
                 let width = img.width;
                 let height = img.height;
@@ -120,7 +118,6 @@ async function processImage(file) {
                         width = Math.round((width / height) * MAX_SIZE);
                         height = MAX_SIZE;
                     }
-                    console.log(`Resized image from ${img.width}x${img.height} to ${width}x${height}`);
                 }
 
                 const canvas = document.createElement('canvas');
@@ -129,7 +126,6 @@ async function processImage(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Convert to JPEG data URL
                 const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
                 uploadedImage = jpegDataUrl;
@@ -140,13 +136,12 @@ async function processImage(file) {
                 optionsSection.style.display = 'flex';
                 resultSection.style.display = 'none';
             } catch (err) {
-                console.error('Error converting image:', err);
-                alert('Errore nella conversione dell\'immagine. Prova con un formato diverso (JPG o PNG).');
+                console.error('Error processing image:', err);
+                alert('Errore nel processare l\'immagine.');
             }
         };
         img.onerror = () => {
-            console.error('Cannot decode image format');
-            alert('⚠️ Impossibile caricare questa immagine.\n\nIl formato potrebbe non essere supportato. Prova a convertirla in JPG o PNG.');
+            alert('Formato immagine non supportato.');
         };
         img.src = e.target.result;
     };
@@ -166,32 +161,14 @@ function resetUpload() {
     resultSection.style.display = 'none';
 }
 
-function updateColorPreview() {
-    const selectedOption = colorSelect.options[colorSelect.selectedIndex];
-    const color = selectedOption.dataset.color;
-    colorPreview.style.backgroundColor = color;
-}
-
-function saveApiKey() {
-    const key = document.getElementById('apiKeyInput').value.trim();
-    if (key) {
-        apiKey = key;
-        localStorage.setItem('openrouter_api_key', key);
-        apiKeyModal.style.display = 'none';
-    }
-}
-
 async function generateImage() {
     if (!uploadedImage) {
-        alert('Per favore, carica prima un\'immagine del divano.');
+        alert('Carica prima un\'immagine del divano.');
         return;
     }
 
     const fabric = document.getElementById('fabricSelect').value;
-    const color = colorSelect.value;
-
-    // Build the prompt
-    const prompt = buildPrompt(fabric, color);
+    const prompt = buildPrompt(fabric, selectedColorName);
 
     loadingOverlay.style.display = 'flex';
 
@@ -213,24 +190,22 @@ async function generateImage() {
 
 function buildPrompt(fabric, color) {
     const fabricDescriptions = {
-        'microfiber': 'microfiber fabric',
-        'velvet': 'velvet fabric',
-        'leather': 'leather',
-        'linen': 'linen fabric',
-        'cotton': 'cotton fabric',
-        'eco-leather': 'eco-leather',
-        'chenille': 'chenille fabric',
-        'bouclé': 'bouclé fabric'
+        'microfiber': 'soft microfiber fabric',
+        'velvet': 'luxurious velvet fabric',
+        'leather': 'genuine leather',
+        'linen': 'natural linen fabric',
+        'cotton': 'high-quality cotton fabric',
+        'eco-leather': 'premium eco-leather',
+        'chenille': 'soft chenille fabric',
+        'bouclé': 'textured bouclé fabric'
     };
 
     const fabricDesc = fabricDescriptions[fabric] || fabric;
 
-    // Instruction-style prompt for pix2pix
     return `Change the sofa upholstery to ${color} ${fabricDesc}. Keep the exact same sofa shape and background.`;
 }
 
 async function callGeminiAPI(prompt) {
-    // Use deployed backend URL or localhost for development
     const BACKEND_URL = window.BACKEND_URL || 'http://localhost:3001';
 
     const response = await fetch(`${BACKEND_URL}/api/gemini/edit`, {
@@ -250,53 +225,24 @@ async function callGeminiAPI(prompt) {
         throw new Error(data.error || 'Image editing failed');
     }
 
-    console.log('Gemini result received');
     return data.image;
-}
-
-async function pollForResult(predictionId) {
-    const PROXY_URL = 'http://localhost:3001';
-    const maxAttempts = 60;
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-        const response = await fetch(`${PROXY_URL}/api/predictions/${predictionId}`, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-            }
-        });
-
-        const prediction = await response.json();
-
-        if (prediction.status === 'succeeded') {
-            return prediction.output[0] || prediction.output;
-        } else if (prediction.status === 'failed') {
-            throw new Error(prediction.error || 'Generation failed');
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-    }
-
-    throw new Error('Timeout waiting for result');
 }
 
 function downloadResult() {
     const resultImage = document.getElementById('resultImage');
     const link = document.createElement('a');
+    link.download = 'divano-nuovo-tessuto.jpg';
     link.href = resultImage.src;
-    link.download = 'sofa-visualizer-result.png';
     link.click();
 }
 
 function tryAgain() {
     resultSection.style.display = 'none';
-    optionsSection.scrollIntoView({ behavior: 'smooth' });
+    optionsSection.style.display = 'flex';
 }
 
-// Expose functions to window for onclick handlers
-window.resetUpload = resetUpload;
+// Make functions available globally
 window.generateImage = generateImage;
+window.resetUpload = resetUpload;
 window.downloadResult = downloadResult;
 window.tryAgain = tryAgain;
-window.saveApiKey = saveApiKey;
