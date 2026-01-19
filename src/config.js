@@ -2,7 +2,7 @@
 // FabricAI Project
 
 export const SUPABASE_URL = 'https://bxuhyovhezvijtwisibc.supabase.co';
-export const SUPABASE_ANON_KEY = 'sb_publishable_AKFSbO2vt3WEyZW9RZae1Q_E3j-Zb3n';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dWh5b3ZoZXp2aWp0d2lzaWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NTIzMTYsImV4cCI6MjA4NDQyODMxNn0.9EjqMgjbk2SwwVSCRjn1NZAGeAgaTlEbhvv7Ko2EnOk';
 
 // Subscription Plans
 export const PLANS = {
