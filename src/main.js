@@ -1,7 +1,8 @@
 // State
 let uploadedImage = null;
 let uploadedImageBase64 = null;
-let apiKey = localStorage.getItem('openrouter_api_key');
+// API key is now configured on the backend (Railway environment variable)
+// No need to store or request it from the user
 
 // DOM Elements
 const imageInput = document.getElementById('imageInput');
@@ -11,18 +12,12 @@ const previewImage = document.getElementById('previewImage');
 const optionsSection = document.getElementById('optionsSection');
 const resultSection = document.getElementById('resultSection');
 const loadingOverlay = document.getElementById('loadingOverlay');
-const apiKeyModal = document.getElementById('apiKeyModal');
 const colorSelect = document.getElementById('colorSelect');
 const colorPreview = document.getElementById('colorPreview');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     updateColorPreview();
-
-    // Check for API key
-    if (!apiKey) {
-        apiKeyModal.style.display = 'flex';
-    }
 });
 
 // Event Listeners
@@ -192,11 +187,6 @@ async function generateImage() {
         return;
     }
 
-    if (!apiKey) {
-        apiKeyModal.style.display = 'flex';
-        return;
-    }
-
     const fabric = document.getElementById('fabricSelect').value;
     const color = colorSelect.value;
 
@@ -249,7 +239,6 @@ async function callGeminiAPI(prompt) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            apiKey: apiKey,
             imageBase64: uploadedImageBase64,
             prompt: prompt
         })
