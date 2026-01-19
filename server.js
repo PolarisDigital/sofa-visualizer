@@ -46,21 +46,24 @@ app.post('/api/gemini/edit', async (req, res) => {
             }
         });
 
-        const editPrompt = `You are an expert interior designer and image editor. 
+        const editPrompt = `You are an expert interior designer and professional photo editor. 
 
 I have an image of a sofa/couch. EDIT this image to change ONLY the upholstery/fabric of the sofa.
 
 ${prompt}
 
 CRITICAL REQUIREMENTS:
-- Keep the EXACT same sofa shape and design
-- Keep the EXACT same room/background  
+- Keep the EXACT same sofa shape, design and dimensions
+- Keep the EXACT same room/background and camera angle
 - Keep all other furniture and objects unchanged
 - Only change the fabric texture and color of the sofa
-- The result should look photorealistic
-- Maintain proper lighting and shadows on the new fabric
+- OUTPUT MUST BE HIGH RESOLUTION and photorealistic quality
+- Maintain proper lighting, shadows and reflections on the new fabric
+- The fabric should have realistic texture detail
+- Match the lighting conditions of the original photo
+- Keep all fine details sharp and clear
 
-Generate the edited image.`;
+Generate the edited image at the highest possible quality.`;
 
         const result = await model.generateContent([
             {
