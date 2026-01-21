@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FabricAI</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+        }
+
+        /* Lists */
+        .fabric-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .fabric-item {
+            padding: 16px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fabric-item:hover,
+        .fabric-item.active {
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        /* Colors Grid */
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .color-card {
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .color-img {
+            height: 120px;
+            width: 100%;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .color-info {
+            padding: 12px;
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Preview Upload */
+        .upload-preview {
+            width: 100%;
+            height: 150px;
+            background: #f9fafb;
+            border: 2px dashed var(--border-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .upload-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p class="subtitle">Gestisci tessuti e colori</p>
+            </div>
+            <a href="/" class="btn btn-secondary">Torna alla Home</a>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Sidebar: Fabrics List & Add -->
+            <div class="sidebar">
+                <div class="card">
+                    <h2>Tessuti</h2>
+                    <div id="fabricsList" class="fabric-list">
+                        <!-- Populated by JS -->
+                        <div class="text-center p-4">Caricamento...</div>
+                    </div>
+
+                    <button class="btn btn-secondary w-full mt-4" onclick="showAddFabricForm()">
+                        + Nuovo Tessuto
+                    </button>
+
+                    <!-- Add Fabric Form (Hidden by default) -->
+                    <div id="addFabricForm"
+                        style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light);">
+                        <h3>Nuovo Tessuto</h3>
+                        <form id="newFabricForm">
+                            <div class="form-group">
+                                <label>Nome Tessuto</label>
+                                <input type="text" id="fabricName" required placeholder="Es. Velluto">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrizione</label>
+                                <textarea id="fabricDesc" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-full">Salva Tessuto</button>
+                            <button type="button" class="btn btn-secondary w-full mt-2"
+                                onclick="hideAddFabricForm()">Annulla</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Colors for selected Fabric -->
+            <div class="main-content">
+                <div class="card" id="colorsPanel" style="display: none;">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="selectedFabricTitle">Varianti Colore</h2>
+                        <button class="btn btn-primary" onclick="showAddColorForm()">+ Aggiungi Colore</button>
+                    </div>
+
+                    <!-- Add Color Form -->
+                    <div id="addColorForm"
+                        style="display: none; margin-bottom: 32px; background: var(--bg-primary); padding: 24px; border-radius: var(--radius-lg);">
+                        <h3>Nuova Variante</h3>
+                        <form id="newColorForm">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label>Nome Colore</label>
+                                    <input type="text" id="colorName" required placeholder="Es. Rosso Rubino">
+                                </div>
+                                <div class="form-group">
+                                    <label>Codice Hex (Fallback)</label>
+                                    <input type="color" id="colorHex" value="#000000" style="height: 48px;">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texture Immagine (Foto reale del tessuto)</label>
+                                <input type="file" id="colorTexture" accept="image/*" required hidden
+                                    onchange="previewTexture(this)">
+                                <div class="upload-preview" onclick="document.getElementById('colorTexture').click()">
+                                    <span id="uploadPlaceholder">Clicca per caricare foto</span>
+                                    <img id="texturePreview" style="display: none;">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Salva Variante</button>
+                            <button type="button" class="btn btn-secondary ml-2"
+                                onclick="hideAddColorForm()">Annulla</button>
+                        </form>
+                    </div>
+
+                    <!-- Colors Grid -->
+                    <div id="colorsGrid" class="colors-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div id="emptyState" class="card text-center py-12">
+                    <p class="text-secondary">Seleziona un tessuto per gestire i suoi colori e texture.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/admin.js"></script>
+</body>
+
+</html>
