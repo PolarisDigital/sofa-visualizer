@@ -54,6 +54,12 @@ const state = {
 // --- DOM Elements (initialized after DOM ready) ---
 let els = {};
 
+// --- ACCORDION TOGGLE (must be global for inline onclick) ---
+window.toggleAccordion = (id) => {
+    const section = document.getElementById(id);
+    if (section) section.classList.toggle('open');
+};
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize DOM elements AFTER page is loaded
@@ -64,8 +70,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadThumb: document.getElementById('usersImageThumb'),
         fabricsGrid: document.getElementById('fabricsGrid'),
         colorsGrid: document.getElementById('colorsGrid'),
-        fabricCount: document.getElementById('fabricCount'),
-        colorCount: document.getElementById('colorCount'),
         generateBtn: document.getElementById('generateBtn'),
         toggleOptions: document.querySelectorAll('.toggle-option'),
         imageWrapper: document.getElementById('imageWrapper'),
@@ -123,7 +127,6 @@ async function loadFabrics() {
         state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
     }
 
-    els.fabricCount.textContent = state.fabrics.length;
     renderFabrics();
 }
 
@@ -148,8 +151,6 @@ async function loadColors(fabricId) {
     }
 
     state.colors = [...dbColors, ...defaultColors];
-
-    els.colorCount.textContent = state.colors.length;
     renderColors();
 }
 
