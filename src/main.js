@@ -51,31 +51,34 @@ const state = {
     colors: []
 };
 
-// --- DOM Elements ---
-const els = {
-    userMenu: document.getElementById('userMenu'),
-    imageInput: document.getElementById('imageInput'),
-    uploadWidget: document.getElementById('uploadWidget'),
-    uploadThumb: document.getElementById('usersImageThumb'),
-    fabricsGrid: document.getElementById('fabricsGrid'),
-    colorsGrid: document.getElementById('colorsGrid'),
-    fabricCount: document.getElementById('fabricCount'),
-    colorCount: document.getElementById('colorCount'),
-    generateBtn: document.getElementById('generateBtn'),
-    toggleOptions: document.querySelectorAll('.toggle-option'),
-    imageWrapper: document.getElementById('imageWrapper'),
-    canvasViewer: document.getElementById('canvasViewer'),
-    canvasLoading: document.getElementById('canvasLoading'),
-    mainImage: document.getElementById('mainImage'),
-    downloadBtn: document.getElementById('downloadBtn'),
-    shareBtn: document.getElementById('shareBtn'),
-    lightbox: document.getElementById('lightbox'),
-    lightboxImg: document.getElementById('lightboxImg'),
-    closeLightbox: document.querySelector('.close-lightbox')
-};
+// --- DOM Elements (initialized after DOM ready) ---
+let els = {};
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize DOM elements AFTER page is loaded
+    els = {
+        userMenu: document.getElementById('userMenu'),
+        imageInput: document.getElementById('imageInput'),
+        uploadWidget: document.getElementById('uploadWidget'),
+        uploadThumb: document.getElementById('usersImageThumb'),
+        fabricsGrid: document.getElementById('fabricsGrid'),
+        colorsGrid: document.getElementById('colorsGrid'),
+        fabricCount: document.getElementById('fabricCount'),
+        colorCount: document.getElementById('colorCount'),
+        generateBtn: document.getElementById('generateBtn'),
+        toggleOptions: document.querySelectorAll('.toggle-option'),
+        imageWrapper: document.getElementById('imageWrapper'),
+        canvasViewer: document.getElementById('canvasViewer'),
+        canvasLoading: document.getElementById('canvasLoading'),
+        mainImage: document.getElementById('mainImage'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        shareBtn: document.getElementById('shareBtn'),
+        lightbox: document.getElementById('lightbox'),
+        lightboxImg: document.getElementById('lightboxImg'),
+        closeLightbox: document.querySelector('.close-lightbox')
+    };
+
     await initAuth();
     await loadFabrics();
     setupEventListeners();
