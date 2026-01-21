@@ -1,41 +1,38 @@
-/* FabricAI Pro Design System - Light Theme */
+/* FabricAI Pro Design System - Glassmorphism & Red Gradient */
 
 :root {
     /* Base Colors - Light Theme (Framer/Apple style) */
-    --bg-app: #f2f2f2;
-    /* Very soft gray for main canvas background */
-    --bg-sidebar: #ffffff;
-    /* White sidebar */
-    --bg-card: #ffffff;
-    /* White cards */
-    --bg-hover: #f5f5f7;
-    /* Subtle hover gray */
-    --bg-input: #f5f5f7;
+    --bg-app: #ffffff;
+    --bg-sidebar: rgba(255, 255, 255, 0.6);
+    /* See-through for glass */
+    --bg-card: rgba(255, 255, 255, 0.8);
+    /* See-through cards */
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --bg-input: rgba(0, 0, 0, 0.03);
 
     /* Text */
     --text-primary: #1d1d1f;
-    /* Almost black (Apple style) */
+    /* Almost black */
     --text-secondary: #6e6e73;
     /* Dark gray */
     --text-muted: #86868b;
     /* Lighter gray */
 
     /* Accents */
-    --accent: #2c2c2c;
-    /* Minimalist dark accent */
+    --accent: #111111;
+    /* Minimalist black accent */
     --accent-hover: #000000;
-    --accent-dim: rgba(0, 0, 0, 0.04);
+    --accent-dim: rgba(0, 0, 0, 0.05);
 
     /* Borders */
-    --border: #d2d2d7;
-    /* Distinct but soft border */
-    --border-light: #e5e5ea;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-light: rgba(0, 0, 0, 0.04);
 
     /* Spacing & Radius */
     --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    /* More rounded */
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    /* Very rounded */
     --header-height: 60px;
 }
 
@@ -48,7 +45,12 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-app);
+
+    /* RED GRADIENT BACKGROUND AS REQUESTED */
+    background: radial-gradient(circle at 90% 90%, #ffe4e4 0%, #fff0f0 30%, #ffffff 70%);
+    background-color: #ffffff;
+    background-attachment: fixed;
+
     color: var(--text-primary);
     height: 100vh;
     overflow: hidden;
@@ -64,14 +66,18 @@ body {
 
 /* ================= SIDEBAR ================= */
 .sidebar {
+    /* GLASSMORPHISM */
     background: var(--bg-sidebar);
-    border-right: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.4);
+
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
     z-index: 10;
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+    box-shadow: 5px 0 30px rgba(0, 0, 0, 0.02);
 }
 
 .sidebar-header {
@@ -81,8 +87,7 @@ body {
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-light);
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
+    background: transparent;
 }
 
 .logo {
@@ -143,14 +148,14 @@ body {
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
 .upload-widget:hover {
     border-color: var(--accent);
-    background: var(--bg-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
 }
 
 .upload-placeholder {
@@ -191,18 +196,20 @@ body {
     padding: 10px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .fabric-card:hover {
     border-color: var(--border);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .fabric-card.selected {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent-dim);
+    background: #fff;
 }
 
 .fabric-card .img-container {
@@ -304,7 +311,8 @@ body {
 .sidebar-footer {
     padding: 24px;
     border-top: 1px solid var(--border-light);
-    background: var(--bg-sidebar);
+    background: rgba(255, 255, 255, 0.5);
+    /* More transparent */
 }
 
 .btn-generate {
@@ -365,10 +373,13 @@ body {
 .main-canvas {
     display: flex;
     flex-direction: column;
-    background: var(--bg-app);
+    /* GLASSMORPHISM CANVAS */
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+
     position: relative;
-    box-shadow: inset 10px 0 20px rgba(0, 0, 0, 0.02);
-    /* Inner shadow for depth */
+    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.02);
 }
 
 .canvas-header {
@@ -393,7 +404,7 @@ body {
 }
 
 .icon-btn {
-    background: white;
+    background: rgba(255, 255, 255, 0.8);
     border: 1px solid var(--border-light);
     color: var(--text-primary);
     width: 40px;
@@ -409,7 +420,7 @@ body {
 }
 
 .icon-btn:hover:not(:disabled) {
-    background: var(--bg-hover);
+    background: white;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -437,10 +448,9 @@ body {
     overflow: hidden;
     position: relative;
     cursor: zoom-in;
-    /* Clean shadow for the floating image */
+    /* Floating effect */
     box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.15), 0 20px 40px -20px rgba(0, 0, 0, 0.1);
-    background: white;
-    /* In case of transparency */
+    background: transparent;
 }
 
 .canvas-image-wrapper img {
@@ -477,8 +487,8 @@ body {
 .canvas-loading {
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -489,7 +499,7 @@ body {
 .spinner-large {
     width: 50px;
     height: 50px;
-    border: 4px solid var(--border-light);
+    border: 4px solid rgba(0, 0, 0, 0.1);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -508,8 +518,7 @@ body {
     position: fixed;
     z-index: 1000;
     inset: 0;
-    background: rgba(255, 255, 255, 0.98);
-    /* Light lightbox */
+    background: rgba(255, 255, 255, 0.95);
     justify-content: center;
     align-items: center;
     animation: fadeIn 0.3s ease;
@@ -575,6 +584,8 @@ body {
         top: 0;
         z-index: 50;
         border-bottom: 1px solid var(--border-light);
+        background: rgba(255, 255, 255, 0.9);
+        /* Less glass on mobile for perf */
     }
 
     .canvas-viewer {
@@ -588,6 +599,8 @@ body {
         border-right: none;
         overflow: visible;
         box-shadow: none;
+        background: white;
+        /* Solid white on mobile */
     }
 
     .sidebar-scroll {
