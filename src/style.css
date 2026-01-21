@@ -1,28 +1,35 @@
-/* FabricAI Pro Design System - Slim Floating Sidebar */
+/* FabricAI Pro Design System - "Floating Islands" Concept */
 
 :root {
     /* Base Colors */
     --bg-gradient-start: #ffffff;
-    --bg-gradient-end: #fff0f0;
+    --bg-gradient-end: #fff0f5;
+    /* Very soft pink/red tint */
 
-    /* Glass Panel Colors */
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.8);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    /* Surface Colors (Glass Islands) */
+    --island-bg: rgba(255, 255, 255, 0.85);
+    --island-border: rgba(255, 255, 255, 0.6);
+    --island-shadow:
+        0 20px 40px -10px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
 
     /* Text */
-    --text-primary: rgba(0, 0, 0, 0.85);
-    --text-secondary: rgba(0, 0, 0, 0.55);
-    --text-muted: rgba(0, 0, 0, 0.35);
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --text-muted: #999999;
 
     /* Accents */
-    --accent: #111;
+    --accent: #000000;
 
-    /* Dimensions - DRASTICALLY REDUCED AS REQUESTED */
-    --sidebar-width: 260px;
-    /* Slim Profile */
-    --radius-panel: 20px;
-    --radius-item: 12px;
+    /* Dimensions */
+    --sidebar-width: 250px;
+    /* Slim and elegant */
+    --gap-outer: 24px;
+    /* Space from screen edges */
+    --gap-inner: 20px;
+    /* Space between islands */
+    --radius-island: 28px;
+    /* Smooth, high rounding */
 }
 
 /* Reset */
@@ -30,125 +37,110 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    outline: none;
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: radial-gradient(circle at 80% 90%, #ffe4e4 0%, #ffffff 60%);
-    background-color: #ffffff;
-    background-attachment: fixed;
-    color: var(--text-primary);
+    /* Red-tinted gradient background as per user preference, but styled like the reference */
+    background: radial-gradient(circle at 0% 0%, #ffffff 50%, #ffe4e4 100%);
+    background-color: #fcfcfc;
     height: 100vh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    color: var(--text-primary);
 }
 
-/* Layout - Slim Sidebar Left, Huge Canvas Right */
+/* Layout: Flex container to center the islands */
 .app-layout {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
+    display: flex;
     height: 100vh;
-    padding: 12px;
-    /* Tighter floating gap */
-    gap: 12px;
+    padding: var(--gap-outer);
+    gap: var(--gap-inner);
+    max-width: 1800px;
+    margin: 0 auto;
 }
 
-/* ================= SIDEBAR (SLIM) ================= */
+/* ================= ISLAND 1: SIDEBAR ================= */
 .sidebar {
-    background: var(--glass-bg);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    border-radius: var(--radius-panel);
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--island-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-island);
+    box-shadow: var(--island-shadow);
+    border: 1px solid white;
 
     display: flex;
     flex-direction: column;
     overflow: hidden;
     height: 100%;
+    /* Fills the padded layout height */
+    position: relative;
+    z-index: 10;
 }
 
 .sidebar-header {
-    height: 60px;
-    padding: 0 20px;
+    height: 70px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
 }
 
 .logo {
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
     color: var(--text-primary);
 }
 
-/* Sidebar Content - Tighter Padding */
+/* Sidebar Content */
 .sidebar-scroll {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
-    /* Reduced from 24px */
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    /* Reduced gap */
+    gap: 28px;
+    scrollbar-width: none;
+    /* Hide scrollbar for clean look */
 }
 
-/* Typos / Labels */
-.control-section h3 {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: 10px;
+.sidebar-scroll::-webkit-scrollbar {
+    display: none;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.badge {
-    background: rgba(0, 0, 0, 0.04);
-    padding: 1px 8px;
-    border-radius: 12px;
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-/* Upload - Compact */
+/* Upload Widget - Minimal */
 .upload-widget {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.6);
     border: 1px dashed rgba(0, 0, 0, 0.1);
-    border-radius: var(--radius-item);
-    height: 100px;
-    /* Reduced height significantly */
+    border-radius: 16px;
+    height: 110px;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
 }
 
 .upload-widget:hover {
-    background: rgba(255, 255, 255, 0.7);
+    background: white;
     border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .upload-placeholder {
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-size: 0.8rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .upload-thumb {
@@ -158,7 +150,24 @@ body {
     position: absolute;
 }
 
-/* Fabrics Grid - 2 cols, tighter */
+/* Sections */
+.control-section h3 {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* Fabrics Grid - Clean 2-col */
 .grid-fabrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -166,34 +175,35 @@ body {
 }
 
 .fabric-card {
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--radius-item);
+    border-radius: 12px;
     padding: 6px;
-    border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
+    background: transparent;
+    border: 1px solid transparent;
 }
 
 .fabric-card:hover {
     background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .fabric-card.selected {
     background: white;
-    box-shadow: 0 0 0 1px var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 
 .fabric-card .content-box {
-    height: 50px;
-    /* Smaller previews */
+    height: 48px;
+    border-radius: 8px;
     background: rgba(0, 0, 0, 0.03);
-    border-radius: 6px;
     margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     font-size: 1.2rem;
 }
 
@@ -205,11 +215,11 @@ body {
 
 .fabric-name {
     font-size: 0.75rem;
-    color: var(--text-primary);
     text-align: center;
+    color: var(--text-secondary);
 }
 
-/* Colors Grid - 4 cols small */
+/* Colors - Minimal Circles */
 .grid-colors {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -224,7 +234,6 @@ body {
     position: relative;
     overflow: hidden;
     transition: transform 0.2s;
-    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .color-item:hover {
@@ -232,7 +241,7 @@ body {
 }
 
 .color-item.selected {
-    box-shadow: 0 0 0 2px var(--glass-bg), 0 0 0 4px var(--text-primary);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text-primary);
 }
 
 .color-item img {
@@ -241,41 +250,12 @@ body {
     object-fit: cover;
 }
 
-/* Toggle */
-.toggle-switch {
-    background: rgba(0, 0, 0, 0.03);
-    padding: 3px;
-    border-radius: 10px;
-    display: flex;
-    gap: 2px;
-    margin-bottom: 16px;
-}
-
-.toggle-option {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 6px;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.toggle-option.active {
-    background: white;
-    color: var(--text-primary);
-    font-weight: 500;
-    shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 /* Footer */
 .sidebar-footer {
-    padding: 16px;
-    /* Compact footer */
+    padding: 20px;
     border-top: 1px solid rgba(0, 0, 0, 0.03);
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
 }
 
 .btn-generate {
@@ -283,87 +263,90 @@ body {
     background: var(--text-primary);
     color: white;
     border: none;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 14px;
     font-weight: 500;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-generate:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: black;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .btn-generate:disabled {
-    background: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.3);
-    box-shadow: none;
+    opacity: 0.3;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .credits {
     text-align: center;
     font-size: 0.65rem;
     color: var(--text-muted);
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
-/* ================= MAIN CANVAS (DOMINANT) ================= */
+/* ================= ISLAND 2: CANVAS ================= */
 .main-canvas {
-    position: relative;
-    border-radius: var(--radius-panel);
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: var(--glass-shadow);
+    flex: 1;
+    background: var(--island-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-island);
+    box-shadow: var(--island-shadow);
+    border: 1px solid white;
+
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
 }
 
 .canvas-header {
     height: 60px;
+    padding: 0 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 24px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
 }
 
 .canvas-title {
     font-weight: 500;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
+    font-size: 0.85rem;
 }
 
 .canvas-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
 }
 
 .icon-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.8);
-    border: 1px solid white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 1rem;
 }
 
 .icon-btn:hover {
-    transform: scale(1.05);
     background: white;
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .canvas-viewer {
@@ -372,51 +355,45 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 24px;
-    /* Less padding to maximize image size */
+    padding: 40px;
 }
 
 .canvas-image-wrapper {
     max-width: 100%;
     max-height: 100%;
-    filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.2));
-    /* Enhanced shadow for depth */
+    /* No shadow on the image wrapper itself, clearer look */
     transition: transform 0.3s ease;
     cursor: zoom-in;
-}
-
-.canvas-image-wrapper:hover {
-    transform: scale(1.005);
 }
 
 .canvas-image-wrapper img {
     display: block;
     max-width: 100%;
-    max-height: 85vh;
+    max-height: 80vh;
     object-fit: contain;
 }
 
-/* Empty/Loading/Lightbox */
+/* Empty/Loading */
 .empty-state {
     text-align: center;
     color: var(--text-muted);
+    opacity: 0.6;
 }
 
 .empty-icon {
     font-size: 2rem;
     margin-bottom: 12px;
-    opacity: 0.4;
 }
 
 .canvas-loading {
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
     z-index: 20;
 }
 
@@ -424,7 +401,7 @@ body {
     width: 40px;
     height: 40px;
     border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top-color: black;
+    border-top-color: var(--text-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
@@ -436,6 +413,7 @@ body {
     }
 }
 
+/* Lightbox */
 .lightbox {
     display: none;
     position: fixed;
@@ -451,48 +429,50 @@ body {
 }
 
 .lightbox-content {
-    max-width: 95vw;
-    max-height: 95vh;
+    max-width: 90vw;
+    max-height: 90vh;
     border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .close-lightbox {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 30px;
+    right: 30px;
     font-size: 2rem;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.close-lightbox:hover {
+    opacity: 1;
 }
 
 /* Mobile */
 @media (max-width: 800px) {
     .app-layout {
-        grid-template-columns: 1fr;
-        padding: 0;
-        gap: 0;
-        display: block;
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+        height: auto;
         overflow-y: auto;
     }
 
     .main-canvas {
         height: 50vh;
-        border-radius: 0;
-        border: none;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        order: 1;
+        min-height: 300px;
         position: sticky;
         top: 0;
-        z-index: 50;
     }
 
     .sidebar {
-        min-height: 60vh;
-        border-radius: 0;
-        box-shadow: none;
-        border: none;
+        width: 100%;
+        min-width: 100%;
         height: auto;
-        padding-bottom: 40px;
+        order: 2;
         overflow: visible;
+        padding-bottom: 30px;
     }
 }
