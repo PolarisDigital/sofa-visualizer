@@ -4,9 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FabricAI - Visualizza Nuovi Tessuti</title>
-  <meta name="description"
-    content="Trasforma il tuo divano con l'intelligenza artificiale. Visualizza nuovi tessuti e colori in pochi secondi.">
+  <title>FabricAI Pro</title>
   <link rel="stylesheet" href="/src/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,124 +15,106 @@
 </head>
 
 <body>
-  <div class="app">
-    <header class="header">
-      <div class="header-top">
+  <div class="app-layout">
+    <!-- LEFT SIDEBAR: CONTROLS -->
+    <aside class="sidebar">
+      <header class="sidebar-header">
         <div class="logo">Fabric<span>AI</span></div>
-        <div class="user-menu" id="userMenu">
-          <a href="/login.html" class="btn btn-primary btn-small" id="loginBtn">Accedi</a>
-          <div class="user-info" id="userInfo" style="display: none;">
-            <span class="generations-badge" id="generationsBadge">3 gen</span>
-            <button class="btn btn-secondary btn-small" id="logoutBtn">Esci</button>
+        <div class="user-menu-compact" id="userMenu">
+          <!-- Injected by JS -->
+        </div>
+      </header>
+
+      <div class="sidebar-scroll">
+        <!-- Upload Section -->
+        <section class="control-section">
+          <div class="upload-widget" id="uploadWidget">
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <div class="upload-placeholder" onclick="document.getElementById('imageInput').click()">
+              <div class="icon-camera">📷</div>
+              <span>Carica Foto</span>
+            </div>
+            <img id="usersImageThumb" class="upload-thumb" style="display: none;">
           </div>
+        </section>
+
+        <!-- Fabrics Section -->
+        <section class="control-section">
+          <div class="section-header">
+            <h3>Tessuto</h3>
+            <span class="badge" id="fabricCount">0</span>
+          </div>
+          <div class="grid-fabrics" id="fabricsGrid">
+            <!-- Populated by JS -->
+            <div class="skeleton-loader"></div>
+            <div class="skeleton-loader"></div>
+          </div>
+        </section>
+
+        <!-- Colors Section -->
+        <section class="control-section">
+          <div class="section-header">
+            <h3>Colore</h3>
+            <span class="badge" id="colorCount">0</span>
+          </div>
+          <!-- Output Toggle -->
+          <div class="toggle-switch mb-3">
+            <button class="toggle-option active" data-mode="ambientato">Ambientato</button>
+            <button class="toggle-option" data-mode="scontornato">Scontornato</button>
+          </div>
+
+          <div class="grid-colors" id="colorsGrid">
+            <div class="empty-hint">Seleziona un tessuto per vedere i colori</div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sidebar-footer">
+        <button id="generateBtn" class="btn-generate" disabled>
+          <span class="btn-text">Genera Anteprima</span>
+          <span class="loading-spinner" style="display: none;"></span>
+        </button>
+        <div class="credits">Powered by Gemini 2.0</div>
+      </footer>
+    </aside>
+
+    <!-- RIGHT MAIN: CANVAS -->
+    <main class="main-canvas">
+      <div class="canvas-header">
+        <div class="canvas-title">Anteprima</div>
+        <div class="canvas-actions">
+          <button class="icon-btn" id="downloadBtn" title="Scarica" disabled>⬇️</button>
+          <button class="icon-btn" id="shareBtn" title="Condividi" disabled>📤</button>
         </div>
       </div>
-      <h1>Visualizza nuovi tessuti</h1>
-      <p class="subtitle">Carica una foto del tuo divano e scegli un nuovo look</p>
-    </header>
 
-    <main class="main">
-      <!-- Upload Section -->
-      <section class="upload-section">
-        <div class="upload-box" id="uploadBox">
-          <input type="file" id="imageInput" accept="image/*" hidden>
-          <!-- Login required message -->
-          <div class="upload-content login-required" id="loginRequired">
-            <div class="upload-icon">🔐</div>
-            <p>Accedi per iniziare a visualizzare nuovi tessuti</p>
-            <a href="/login.html" class="btn btn-primary">Accedi o Registrati</a>
-          </div>
-          <!-- Upload content (shown when logged in) -->
-          <div class="upload-content" id="uploadContent" style="display: none;">
-            <div class="upload-icon">📷</div>
-            <p>Carica una foto del tuo divano</p>
-            <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-              Seleziona immagine
-            </button>
-          </div>
-        </div>
-        <div class="preview-container" id="previewContainer" style="display: none;">
-          <img id="previewImage" alt="Anteprima divano">
-          <button class="btn btn-secondary btn-small" onclick="resetUpload()">Cambia foto</button>
-        </div>
-      </section>
-
-      <!-- Options Section -->
-      <section class="options-section" id="optionsSection" style="display: none;">
-        <div class="option-group">
-          <label>Tessuto</label>
-          <select id="fabricSelect">
-            <option value="velvet">Velluto</option>
-            <option value="leather">Pelle</option>
-            <option value="linen">Lino</option>
-            <option value="microfiber">Microfibra</option>
-            <option value="cotton">Cotone</option>
-            <option value="bouclé">Bouclé</option>
-          </select>
+      <div class="canvas-viewer" id="canvasViewer">
+        <div class="empty-state">
+          <div class="empty-icon">🛋️</div>
+          <h2>Pronto a trasformare il tuo divano?</h2>
+          <p>Carica una foto e seleziona un tessuto per iniziare.</p>
         </div>
 
-        <div class="option-group">
-          <label>Colore</label>
-          <div class="color-grid" id="colorGrid">
-            <div class="color-swatch active" data-name="Blu Navy" style="background: #1B365D;"></div>
-            <div class="color-swatch" data-name="Verde Salvia" style="background: #9CAF88;"></div>
-            <div class="color-swatch" data-name="Rosa Cipria" style="background: #E8C4C4;"></div>
-            <div class="color-swatch" data-name="Grigio" style="background: #6B7280;"></div>
-            <div class="color-swatch" data-name="Beige" style="background: #D4B896;"></div>
-            <div class="color-swatch" data-name="Marrone" style="background: #8B6914;"></div>
-            <div class="color-swatch" data-name="Bianco" style="background: #F5F5F5; border: 1px solid #e2e8f0;"></div>
-            <div class="color-swatch" data-name="Nero" style="background: #1C1C1C;"></div>
-            <div class="color-swatch" data-name="Terracotta" style="background: #C4704E;"></div>
-            <div class="color-swatch" data-name="Blu Polvere" style="background: #B4C7DC;"></div>
+        <div class="canvas-image-wrapper" id="imageWrapper" style="display: none;">
+          <img id="mainImage" src="" alt="Risultato">
+          <div class="compare-slider" id="compareSlider">
+            <!-- Feature futura: Slider Prima/Dopo -->
           </div>
         </div>
 
-        <div class="option-group">
-          <label>Output</label>
-          <div class="toggle-group" id="outputMode">
-            <button type="button" class="toggle-btn active" data-mode="ambientato">🏠 Ambientato</button>
-            <button type="button" class="toggle-btn" data-mode="scontornato">✂️ Scontornato</button>
-          </div>
-        </div>
-
-        <button class="btn btn-generate" id="generateBtn" onclick="generateImage()">
-          Genera anteprima
-        </button>
-      </section>
-
-      <!-- Result Section -->
-      <section class="result-section" id="resultSection" style="display: none;">
-        <h2>Risultato</h2>
-        <div class="comparison">
-          <div class="comparison-item">
-            <span class="comparison-label">Prima</span>
-            <img id="originalThumb" alt="Originale">
-          </div>
-          <div class="comparison-arrow">→</div>
-          <div class="comparison-item">
-            <span class="comparison-label">Dopo</span>
-            <img id="resultImage" alt="Risultato">
-          </div>
-        </div>
-        <div class="result-actions">
-          <button class="btn btn-primary" onclick="downloadResult()">Salva immagine</button>
-          <button class="btn btn-secondary" onclick="tryAgain()">Riprova</button>
-        </div>
-      </section>
-
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-content">
-          <div class="spinner"></div>
-          <h3>Generazione in corso</h3>
-          <p class="loading-hint">Stiamo applicando il nuovo tessuto...</p>
+        <!-- Loading State overlay on canvas -->
+        <div class="canvas-loading" id="canvasLoading" style="display: none;">
+          <div class="spinner-large"></div>
+          <p>L'IA sta lavorando sul tuo design...</p>
         </div>
       </div>
     </main>
+  </div>
 
-    <footer class="footer">
-      <p>Powered by AI</p>
-    </footer>
+  <!-- Lightbox Modal -->
+  <div class="lightbox" id="lightbox">
+    <span class="close-lightbox">&times;</span>
+    <img class="lightbox-content" id="lightboxImg">
   </div>
 
   <script type="module" src="/src/main.js"></script>
