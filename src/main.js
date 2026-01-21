@@ -234,9 +234,8 @@ function setupEventListeners() {
         return true;
     };
 
-    // Upload - ORIGINAL SIMPLE VERSION
+    // Upload - REMOVED AUTH CHECK (was blocking even logged-in users)
     els.imageInput.addEventListener('change', (e) => {
-        if (!checkAuthAction()) return;
         const file = e.target.files[0];
         if (file) handleImageUpload(file);
     });
