@@ -96,15 +96,22 @@ async function loadColors(fabricId) {
 }
 
 // --- Rendering ---
+// Rendering
 function renderFabrics() {
-    els.fabricsGrid.innerHTML = state.fabrics.map(f => `
-        <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}">
-            <div style="height: 80px; background: #3f3f46; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 2rem;">
-               🧵
+    els.fabricsGrid.innerHTML = state.fabrics.map(f => {
+        // Fallback or Image for fabric
+        const content = f.preview_url
+            ? `<img src="${f.preview_url}" alt="${f.name}">`
+            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #3f3f46;">🧵</div>`;
+
+        return `
+        <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}" title="${f.name}">
+            <div style="height: 80px; width: 100%; position: relative; overflow: hidden; border-radius: 4px;">
+               ${content}
             </div>
             <div class="fabric-name mt-2">${f.name}</div>
         </div>
-    `).join('');
+    `}).join('');
 
     // Attach events
     document.querySelectorAll('.fabric-card').forEach(card => {
@@ -121,11 +128,21 @@ function renderColors() {
         return;
     }
 
-    els.colorsGrid.innerHTML = state.colors.map(c => `
-        <div class="color-item ${state.selectedColor?.id === c.id ? 'selected' : ''}" data-id="${c.id}" title="${c.name}">
-            <img src="${c.preview_url}" alt="${c.name}">
+    els.colorsGrid.innerHTML = state.colors.map(c => {
+        // Fallback: Use hex color if no image
+        const style = !c.preview_url && c.hex_value
+            ? `background-color: ${c.hex_value};`
+            : 'background-color: #3f3f46;'; // Default gray
+
+        const content = c.preview_url
+            ? `<img src="${c.preview_url}" alt="${c.name}">`
+            : '';
+
+        return `
+        <div class="color-item ${state.selectedColor?.id === c.id ? 'selected' : ''}" data-id="${c.id}" title="${c.name}" style="${style}">
+            ${content}
         </div>
-    `).join('');
+    `}).join('');
 
     document.querySelectorAll('.color-item').forEach(item => {
         item.addEventListener('click', () => {
