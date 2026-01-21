@@ -59,8 +59,9 @@ const els = {
     uploadThumb: document.getElementById('usersImageThumb'),
     fabricsGrid: document.getElementById('fabricsGrid'),
     colorsGrid: document.getElementById('colorsGrid'),
-    fabricCount: document.getElementById('fabricCount'),
-    colorCount: document.getElementById('colorCount'),
+    // Badge counts removed from HTML in recent update, checking existence before use
+    // fabricCount: document.getElementById('fabricCount'), 
+    // colorCount: document.getElementById('colorCount'),
     generateBtn: document.getElementById('generateBtn'),
     toggleOptions: document.querySelectorAll('.toggle-option'),
     imageWrapper: document.getElementById('imageWrapper'),
@@ -73,6 +74,14 @@ const els = {
     lightboxImg: document.getElementById('lightboxImg'),
     closeLightbox: document.querySelector('.close-lightbox')
 };
+
+// --- ACCORDION LOGIC (Global) ---
+window.toggleAccordion = (id) => {
+    const section = document.getElementById(id);
+    if (section) {
+        section.classList.toggle('open');
+    }
+}
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,7 +99,7 @@ async function initAuth() {
         els.userMenu.innerHTML = `
             <div style="display: flex; gap: 10px; align-items: center;">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">${state.user.email}</span>
-                <button class="btn-generate" style="padding: 6px 12px; font-size: 0.75rem; width: auto;" id="logoutBtn">Esci</button>
+                <button class="text-btn" style="padding: 4px 10px; font-size: 0.75rem;" id="logoutBtn">Esci</button>
             </div>
         `;
         document.getElementById('logoutBtn').onclick = async () => {
@@ -104,7 +113,6 @@ async function initAuth() {
     }
 }
 
-// --- Data Fetching ---
 // --- Data Fetching ---
 async function loadFabrics() {
     let data = [];
@@ -120,7 +128,7 @@ async function loadFabrics() {
         state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
     }
 
-    els.fabricCount.textContent = state.fabrics.length;
+    // els.fabricCount.textContent = state.fabrics.length; // Removing count update if element is missing
     renderFabrics();
 }
 
@@ -128,7 +136,7 @@ async function loadColors(fabricId) {
     els.colorsGrid.innerHTML = '<div class="skeleton-loader"></div>';
 
     let dbColors = [];
-    if (!fabricId.startsWith('f_')) { // checking if it's a real DB ID (uuid) or our static ID
+    if (!fabricId.startsWith('f_')) {
         try {
             const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
             if (data) dbColors = data;
@@ -146,25 +154,24 @@ async function loadColors(fabricId) {
 
     state.colors = [...dbColors, ...defaultColors];
 
-    els.colorCount.textContent = state.colors.length;
+    // els.colorCount.textContent = state.colors.length; // Removing count update
     renderColors();
 }
 
 // --- Rendering ---
-// Rendering
 function renderFabrics() {
     els.fabricsGrid.innerHTML = state.fabrics.map(f => {
         // Fallback or Image for fabric
         const content = f.preview_url
             ? `<img src="${f.preview_url}" alt="${f.name}">`
-            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #3f3f46;">🧵</div>`;
+            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #f0f0f0;">🧵</div>`;
 
         return `
         <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}" title="${f.name}">
-            <div style="height: 80px; width: 100%; position: relative; overflow: hidden; border-radius: 4px;">
+            <div class="content-box">
                ${content}
             </div>
-            <div class="fabric-name mt-2">${f.name}</div>
+            <div class="fabric-name">${f.name}</div>
         </div>
     `}).join('');
 
@@ -187,7 +194,7 @@ function renderColors() {
         // Fallback: Use hex color if no image
         const style = !c.preview_url && c.hex_value
             ? `background-color: ${c.hex_value};`
-            : 'background-color: #3f3f46;'; // Default gray
+            : 'background-color: #f0f0f0;'; // Default gray
 
         const content = c.preview_url
             ? `<img src="${c.preview_url}" alt="${c.name}">`
@@ -228,7 +235,7 @@ function updateGenerateButton() {
     if (ready) els.generateBtn.classList.add('pulse');
 }
 
-// --- Image Handling ---
+// --- Image Handling & Event Listeners ---
 function setupEventListeners() {
     // Check Auth before actions
     const checkAuthAction = () => {
@@ -240,11 +247,13 @@ function setupEventListeners() {
     };
 
     // Upload
-    els.imageInput.addEventListener('change', (e) => {
-        if (!checkAuthAction()) return;
-        const file = e.target.files[0];
-        if (file) handleImageUpload(file);
-    });
+    if (els.imageInput) {
+        els.imageInput.addEventListener('change', (e) => {
+            if (!checkAuthAction()) return;
+            const file = e.target.files[0];
+            if (file) handleImageUpload(file);
+        });
+    }
 
     // Output Mode Toggle
     els.toggleOptions.forEach(btn => {
@@ -256,45 +265,56 @@ function setupEventListeners() {
     });
 
     // Generate
-    els.generateBtn.addEventListener('click', generateImage);
+    if (els.generateBtn) els.generateBtn.addEventListener('click', generateImage);
 
     // Lightbox
-    els.imageWrapper.addEventListener('click', () => {
-        if (els.mainImage.src) {
-            els.lightboxImg.src = els.mainImage.src;
-            els.lightbox.classList.add('active');
-        }
-    });
+    if (els.imageWrapper) {
+        els.imageWrapper.addEventListener('click', () => {
+            if (els.mainImage.src) {
+                els.lightboxImg.src = els.mainImage.src;
+                els.lightbox.classList.add('active');
+            }
+        });
+    }
 
-    els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
+    if (els.closeLightbox) els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
 
     // Download / Share
-    els.downloadBtn.addEventListener('click', () => {
-        if (els.mainImage.src) {
-            const link = document.createElement('a');
-            link.href = els.mainImage.src;
-            link.download = `fabricai-${Date.now()}.jpg`;
-            link.click();
-        }
-    });
+    if (els.downloadBtn) {
+        els.downloadBtn.addEventListener('click', () => {
+            if (els.mainImage.src) {
+                const link = document.createElement('a');
+                link.href = els.mainImage.src;
+                link.download = `fabricai-${Date.now()}.jpg`;
+                link.click();
+            }
+        });
+    }
 
-    els.shareBtn.addEventListener('click', async () => {
-        if (navigator.share && els.mainImage.src) {
-            const blob = await (await fetch(els.mainImage.src)).blob();
-            const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
-            navigator.share({
-                title: 'Il mio nuovo divano',
-                text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
-                files: [file]
-            });
-        } else {
-            alert('Condivisione non supportata su questo dispositivo');
-        }
-    });
+    if (els.shareBtn) {
+        els.shareBtn.addEventListener('click', async () => {
+            if (navigator.share && els.mainImage.src) {
+                try {
+                    const blob = await (await fetch(els.mainImage.src)).blob();
+                    const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
+                    navigator.share({
+                        title: 'Il mio nuovo divano',
+                        text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
+                        files: [file]
+                    });
+                } catch (e) { console.error('Share error:', e); }
+            } else {
+                alert('Condivisione non supportata su questo dispositivo');
+            }
+        });
+    }
 }
 
 function handleImageUpload(file) {
     if (file.size > 10 * 1024 * 1024) return alert('File troppo grande (max 10MB)');
+
+    // Check for FileReader support
+    if (!window.FileReader) return alert('Browser non supporta il caricamento file');
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -302,16 +322,24 @@ function handleImageUpload(file) {
         state.uploadedImageBase64 = e.target.result.split(',')[1];
 
         // Update Thumb in sidebar
-        els.uploadThumb.src = e.target.result;
-        els.uploadThumb.style.display = 'block';
-        els.uploadWidget.style.borderStyle = 'solid';
+        if (els.uploadThumb) {
+            els.uploadThumb.src = e.target.result;
+            els.uploadThumb.style.display = 'block';
+        }
+        if (els.uploadWidget) els.uploadWidget.style.borderStyle = 'solid';
 
         // Show in main canvas immediately
-        els.mainImage.src = e.target.result;
-        els.imageWrapper.style.display = 'block';
-        document.querySelector('.empty-state').style.display = 'none';
+        if (els.mainImage) els.mainImage.src = e.target.result;
+        if (els.imageWrapper) els.imageWrapper.style.display = 'block';
+
+        const emptyState = document.querySelector('.empty-state');
+        if (emptyState) emptyState.style.display = 'none';
 
         updateGenerateButton();
+    };
+    reader.onerror = (err) => {
+        console.error('File Reading Error:', err);
+        alert('Errore nella lettura del file');
     };
     reader.readAsDataURL(file);
 }
@@ -325,8 +353,6 @@ async function generateImage() {
     els.generateBtn.disabled = true;
 
     try {
-        // Construct intelligent prompt using DB Data
-        // Combine fabric name + color name + optional texture prompt
         const promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}. ${state.selectedColor.texture_prompt || ''}`;
 
         const response = await fetch(`${window.BACKEND_URL}/api/gemini/edit`, {
@@ -335,7 +361,7 @@ async function generateImage() {
             body: JSON.stringify({
                 imageBase64: state.uploadedImageBase64,
                 prompt: promptText,
-                userId: state.user.id,
+                userId: state.user?.id || 'guest', // Fallback for testing if weird auth state
                 outputMode: state.outputMode
             })
         });
