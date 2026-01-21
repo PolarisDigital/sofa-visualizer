@@ -391,10 +391,14 @@ async function handleImageUpload(file) {
                 const emptyState = document.querySelector('.empty-state');
 
                 if (mainImg) {
+                    console.log('Setting mainImg.src, dataUrl length:', jpegDataUrl.length);
                     mainImg.src = jpegDataUrl;
                     els.mainImage = mainImg; // Update reference
+                } else {
+                    console.error('mainImg not found!');
                 }
                 if (imgWrapper) {
+                    console.log('Setting imgWrapper display to block');
                     imgWrapper.style.display = 'block';
                     els.imageWrapper = imgWrapper;
                 }
