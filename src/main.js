@@ -297,24 +297,65 @@ function setupEventListeners() {
 }
 
 function handleImageUpload(file) {
-    if (file.size > 10 * 1024 * 1024) return alert('File troppo grande (max 10MB)');
+    if (file.size > 15 * 1024 * 1024) return alert('File troppo grande (max 15MB)');
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        state.uploadedImage = e.target.result;
-        state.uploadedImageBase64 = e.target.result.split(',')[1];
+        // Create an Image object to process through canvas
+        const img = new Image();
+        img.onload = () => {
+            try {
+                // Resize if too large
+                const MAX_SIZE = 1200;
+                let width = img.width;
+                let height = img.height;
 
-        // Update Thumb in sidebar
-        els.uploadThumb.src = e.target.result;
-        els.uploadThumb.style.display = 'block';
-        els.uploadWidget.style.borderStyle = 'solid';
+                if (width > MAX_SIZE || height > MAX_SIZE) {
+                    if (width > height) {
+                        height = Math.round((height / width) * MAX_SIZE);
+                        width = MAX_SIZE;
+                    } else {
+                        width = Math.round((width / height) * MAX_SIZE);
+                        height = MAX_SIZE;
+                    }
+                }
 
-        // Show in main canvas immediately
-        els.mainImage.src = e.target.result;
-        els.imageWrapper.style.display = 'block';
-        document.querySelector('.empty-state').style.display = 'none';
+                // Draw to canvas and convert to JPEG
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
 
-        updateGenerateButton();
+                const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+                // Store processed image
+                state.uploadedImage = jpegDataUrl;
+                state.uploadedImageBase64 = jpegDataUrl.split(',')[1];
+
+                // Update Thumb in sidebar
+                els.uploadThumb.src = jpegDataUrl;
+                els.uploadThumb.style.display = 'block';
+                els.uploadWidget.style.borderStyle = 'solid';
+
+                // Show in main canvas
+                els.mainImage.src = jpegDataUrl;
+                els.imageWrapper.style.display = 'block';
+                document.querySelector('.empty-state').style.display = 'none';
+
+                updateGenerateButton();
+            } catch (err) {
+                console.error('Image processing error:', err);
+                alert('Errore nel processare l\'immagine');
+            }
+        };
+        img.onerror = () => {
+            alert('Impossibile caricare questa immagine. Prova un altro formato (JPG, PNG).');
+        };
+        img.src = e.target.result;
+    };
+    reader.onerror = () => {
+        alert('Errore nella lettura del file');
     };
     reader.readAsDataURL(file);
 }
