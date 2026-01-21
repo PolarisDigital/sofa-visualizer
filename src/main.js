@@ -138,10 +138,8 @@ async function loadColors(fabricId) {
         } catch (e) { console.error(e); }
     }
 
-    // Get defaults based on fabric ID mapping or generic defaults
     let defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-
-    // Special handling: if fabric is one of our static ones, lookup by ID
+    // Special handling for static IDs
     const fabricIsStatic = DEFAULT_FABRICS.find(f => f.id === fabricId);
     if (fabricIsStatic) {
         defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
@@ -154,7 +152,6 @@ async function loadColors(fabricId) {
 // --- Rendering ---
 function renderFabrics() {
     els.fabricsGrid.innerHTML = state.fabrics.map(f => {
-        // Fallback or Image for fabric
         const content = f.preview_url
             ? `<img src="${f.preview_url}" alt="${f.name}">`
             : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #f0f0f0;">🧵</div>`;
@@ -168,7 +165,6 @@ function renderFabrics() {
         </div>
     `}).join('');
 
-    // Attach events
     document.querySelectorAll('.fabric-card').forEach(card => {
         card.addEventListener('click', () => {
             const fabric = state.fabrics.find(f => f.id === card.dataset.id);
@@ -184,10 +180,9 @@ function renderColors() {
     }
 
     els.colorsGrid.innerHTML = state.colors.map(c => {
-        // Fallback: Use hex color if no image
         const style = !c.preview_url && c.hex_value
             ? `background-color: ${c.hex_value};`
-            : 'background-color: #f0f0f0;'; // Default gray
+            : 'background-color: #f0f0f0;';
 
         const content = c.preview_url
             ? `<img src="${c.preview_url}" alt="${c.name}">`
@@ -210,8 +205,8 @@ function renderColors() {
 // --- Interactions ---
 function selectFabric(fabric) {
     state.selectedFabric = fabric;
-    state.selectedColor = null; // Reset color
-    renderFabrics(); // Re-render to update selected UI
+    state.selectedColor = null;
+    renderFabrics();
     loadColors(fabric.id);
     updateGenerateButton();
 }
@@ -230,7 +225,6 @@ function updateGenerateButton() {
 
 // --- Image Handling & Event Listeners ---
 function setupEventListeners() {
-    // Check Auth before actions
     const checkAuthAction = () => {
         if (!state.user) {
             window.location.href = '/login.html';
@@ -239,7 +233,6 @@ function setupEventListeners() {
         return true;
     };
 
-    // Upload
     if (els.imageInput) {
         els.imageInput.addEventListener('change', (e) => {
             if (!checkAuthAction()) return;
@@ -248,7 +241,6 @@ function setupEventListeners() {
         });
     }
 
-    // Output Mode Toggle
     els.toggleOptions.forEach(btn => {
         btn.addEventListener('click', () => {
             els.toggleOptions.forEach(b => b.classList.remove('active'));
@@ -257,10 +249,8 @@ function setupEventListeners() {
         });
     });
 
-    // Generate
     if (els.generateBtn) els.generateBtn.addEventListener('click', generateImage);
 
-    // Lightbox
     if (els.imageWrapper) {
         els.imageWrapper.addEventListener('click', () => {
             if (els.mainImage.src) {
@@ -272,7 +262,6 @@ function setupEventListeners() {
 
     if (els.closeLightbox) els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
 
-    // Download / Share
     if (els.downloadBtn) {
         els.downloadBtn.addEventListener('click', () => {
             if (els.mainImage.src) {
@@ -304,59 +293,50 @@ function setupEventListeners() {
 }
 
 function handleImageUpload(file) {
+    // SIMPLE, PERMISSIVE LOGIC
     if (!file) return;
-    if (file.size > 25 * 1024 * 1024) return alert('File troppo grande (max 25MB)');
 
-    // Validate type
-    if (!file.type.match('image.*')) return alert('Per favore carica un file immagine valido');
-
-    // Check for FileReader support
-    if (!window.FileReader) return alert('Browser non supporta il caricamento file');
+    // Optional Check (kept very basic)
+    if (file.size > 20 * 1024 * 1024) {
+        console.warn('File large'); // Don't block, just warn
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
         const result = e.target.result;
 
-        // Validation: ensures we have a valid data string
-        if (!result || !result.startsWith('data:image')) {
-            return alert('Errore: Immagine non valida');
-        }
-
+        // Store state immediately
         state.uploadedImage = result;
         state.uploadedImageBase64 = result.split(',')[1];
 
-        // Update Thumb in sidebar
+        // Show Thumbnail
         if (els.uploadThumb) {
-            els.uploadThumb.onload = () => {
-                els.uploadThumb.style.display = 'block';
-            };
-            els.uploadThumb.onerror = () => {
-                console.error('Thumb display error');
-                els.uploadThumb.style.display = 'none';
-            };
+            els.uploadThumb.style.display = 'block';
             els.uploadThumb.src = result;
         }
         if (els.uploadWidget) els.uploadWidget.style.borderStyle = 'solid';
 
-        // Show in main canvas immediately
+        // Show Main Image UNCONDITIONALLY
+        // Removing complex onload/onerror checks that might be blocking display
         if (els.mainImage) {
-            els.mainImage.onload = () => {
-                if (els.imageWrapper) els.imageWrapper.style.display = 'block';
-                const emptyState = document.querySelector('.empty-state');
-                if (emptyState) emptyState.style.display = 'none';
-            };
-            els.mainImage.onerror = () => {
-                alert('Impossibile mostrare questa immagine.');
-                if (els.imageWrapper) els.imageWrapper.style.display = 'none';
-            };
             els.mainImage.src = result;
         }
+
+        // Ensure wrapper is visible
+        if (els.imageWrapper) {
+            els.imageWrapper.style.display = 'block';
+        }
+
+        // Hide empty state
+        const emptyState = document.querySelector('.empty-state');
+        if (emptyState) emptyState.style.display = 'none';
 
         updateGenerateButton();
     };
     reader.onerror = (err) => {
-        console.error('File Reading Error:', err);
-        alert('Errore nella lettura del file');
+        // Only alert on catastrophic read failure
+        console.error(err);
+        alert('Errore lettura immagine');
     };
     reader.readAsDataURL(file);
 }
@@ -365,7 +345,6 @@ function handleImageUpload(file) {
 async function generateImage() {
     if (!state.uploadedImage || !state.selectedColor) return;
 
-    // UI Loading
     els.canvasLoading.style.display = 'flex';
     els.generateBtn.disabled = true;
 
@@ -378,7 +357,7 @@ async function generateImage() {
             body: JSON.stringify({
                 imageBase64: state.uploadedImageBase64,
                 prompt: promptText,
-                userId: state.user?.id || 'guest', // Fallback for testing if weird auth state
+                userId: state.user?.id || 'guest',
                 outputMode: state.outputMode
             })
         });
@@ -387,11 +366,9 @@ async function generateImage() {
 
         if (!data.success) throw new Error(data.error);
 
-        // Success
         const resultSrc = `data:image/jpeg;base64,${data.image}`;
         els.mainImage.src = resultSrc;
 
-        // Enable actions
         els.downloadBtn.disabled = false;
         els.shareBtn.disabled = false;
 
