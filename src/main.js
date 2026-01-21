@@ -51,26 +51,8 @@ const state = {
     colors: []
 };
 
-// --- DOM Elements ---
-const els = {
-    userMenu: document.getElementById('userMenu'),
-    imageInput: document.getElementById('imageInput'),
-    uploadWidget: document.getElementById('uploadWidget'),
-    uploadThumb: document.getElementById('usersImageThumb'),
-    fabricsGrid: document.getElementById('fabricsGrid'),
-    colorsGrid: document.getElementById('colorsGrid'),
-    generateBtn: document.getElementById('generateBtn'),
-    toggleOptions: document.querySelectorAll('.toggle-option'),
-    imageWrapper: document.getElementById('imageWrapper'),
-    canvasViewer: document.getElementById('canvasViewer'),
-    canvasLoading: document.getElementById('canvasLoading'),
-    mainImage: document.getElementById('mainImage'),
-    downloadBtn: document.getElementById('downloadBtn'),
-    shareBtn: document.getElementById('shareBtn'),
-    lightbox: document.getElementById('lightbox'),
-    lightboxImg: document.getElementById('lightboxImg'),
-    closeLightbox: document.querySelector('.close-lightbox')
-};
+// --- DOM Elements (initialized after DOMContentLoaded) ---
+let els = {};
 
 // --- ACCORDION LOGIC (Global) ---
 window.toggleAccordion = (id) => {
@@ -82,6 +64,27 @@ window.toggleAccordion = (id) => {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize DOM elements AFTER page is loaded
+    els = {
+        userMenu: document.getElementById('userMenu'),
+        imageInput: document.getElementById('imageInput'),
+        uploadWidget: document.getElementById('uploadWidget'),
+        uploadThumb: document.getElementById('usersImageThumb'),
+        fabricsGrid: document.getElementById('fabricsGrid'),
+        colorsGrid: document.getElementById('colorsGrid'),
+        generateBtn: document.getElementById('generateBtn'),
+        toggleOptions: document.querySelectorAll('.toggle-option'),
+        imageWrapper: document.getElementById('imageWrapper'),
+        canvasViewer: document.getElementById('canvasViewer'),
+        canvasLoading: document.getElementById('canvasLoading'),
+        mainImage: document.getElementById('mainImage'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        shareBtn: document.getElementById('shareBtn'),
+        lightbox: document.getElementById('lightbox'),
+        lightboxImg: document.getElementById('lightboxImg'),
+        closeLightbox: document.querySelector('.close-lightbox')
+    };
+
     await initAuth();
     await loadFabrics();
     setupEventListeners();
@@ -118,7 +121,6 @@ async function loadFabrics() {
         if (response.data) data = response.data;
     } catch (e) { console.error('Supabase error', e); }
 
-    // Merge or use defaults if empty
     if (data.length === 0) {
         state.fabrics = DEFAULT_FABRICS;
     } else {
@@ -139,7 +141,6 @@ async function loadColors(fabricId) {
     }
 
     let defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-    // Special handling for static IDs
     const fabricIsStatic = DEFAULT_FABRICS.find(f => f.id === fabricId);
     if (fabricIsStatic) {
         defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
@@ -223,7 +224,7 @@ function updateGenerateButton() {
     if (ready) els.generateBtn.classList.add('pulse');
 }
 
-// --- Image Handling & Event Listeners ---
+// --- Image Handling ---
 function setupEventListeners() {
     const checkAuthAction = () => {
         if (!state.user) {
@@ -233,14 +234,14 @@ function setupEventListeners() {
         return true;
     };
 
-    if (els.imageInput) {
-        els.imageInput.addEventListener('change', (e) => {
-            if (!checkAuthAction()) return;
-            const file = e.target.files[0];
-            if (file) handleImageUpload(file);
-        });
-    }
+    // Upload - ORIGINAL SIMPLE VERSION
+    els.imageInput.addEventListener('change', (e) => {
+        if (!checkAuthAction()) return;
+        const file = e.target.files[0];
+        if (file) handleImageUpload(file);
+    });
 
+    // Output Mode Toggle
     els.toggleOptions.forEach(btn => {
         btn.addEventListener('click', () => {
             els.toggleOptions.forEach(b => b.classList.remove('active'));
@@ -249,94 +250,64 @@ function setupEventListeners() {
         });
     });
 
-    if (els.generateBtn) els.generateBtn.addEventListener('click', generateImage);
+    // Generate
+    els.generateBtn.addEventListener('click', generateImage);
 
-    if (els.imageWrapper) {
-        els.imageWrapper.addEventListener('click', () => {
-            if (els.mainImage.src) {
-                els.lightboxImg.src = els.mainImage.src;
-                els.lightbox.classList.add('active');
-            }
-        });
-    }
+    // Lightbox
+    els.imageWrapper.addEventListener('click', () => {
+        if (els.mainImage.src) {
+            els.lightboxImg.src = els.mainImage.src;
+            els.lightbox.classList.add('active');
+        }
+    });
 
-    if (els.closeLightbox) els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
+    els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
 
-    if (els.downloadBtn) {
-        els.downloadBtn.addEventListener('click', () => {
-            if (els.mainImage.src) {
-                const link = document.createElement('a');
-                link.href = els.mainImage.src;
-                link.download = `fabricai-${Date.now()}.jpg`;
-                link.click();
-            }
-        });
-    }
+    // Download / Share
+    els.downloadBtn.addEventListener('click', () => {
+        if (els.mainImage.src) {
+            const link = document.createElement('a');
+            link.href = els.mainImage.src;
+            link.download = `fabricai-${Date.now()}.jpg`;
+            link.click();
+        }
+    });
 
-    if (els.shareBtn) {
-        els.shareBtn.addEventListener('click', async () => {
-            if (navigator.share && els.mainImage.src) {
-                try {
-                    const blob = await (await fetch(els.mainImage.src)).blob();
-                    const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
-                    navigator.share({
-                        title: 'Il mio nuovo divano',
-                        text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
-                        files: [file]
-                    });
-                } catch (e) { console.error('Share error:', e); }
-            } else {
-                alert('Condivisione non supportata su questo dispositivo');
-            }
-        });
-    }
+    els.shareBtn.addEventListener('click', async () => {
+        if (navigator.share && els.mainImage.src) {
+            const blob = await (await fetch(els.mainImage.src)).blob();
+            const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
+            navigator.share({
+                title: 'Il mio nuovo divano',
+                text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
+                files: [file]
+            });
+        } else {
+            alert('Condivisione non supportata su questo dispositivo');
+        }
+    });
 }
 
+// ORIGINAL WORKING handleImageUpload - NO EXTRA CHECKS
 function handleImageUpload(file) {
-    // SIMPLE, PERMISSIVE LOGIC
-    if (!file) return;
-
-    // Optional Check (kept very basic)
-    if (file.size > 20 * 1024 * 1024) {
-        console.warn('File large'); // Don't block, just warn
-    }
+    if (file.size > 10 * 1024 * 1024) return alert('File troppo grande (max 10MB)');
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        const result = e.target.result;
+        state.uploadedImage = e.target.result;
+        state.uploadedImageBase64 = e.target.result.split(',')[1];
 
-        // Store state immediately
-        state.uploadedImage = result;
-        state.uploadedImageBase64 = result.split(',')[1];
+        // Update Thumb in sidebar
+        els.uploadThumb.src = e.target.result;
+        els.uploadThumb.style.display = 'block';
+        els.uploadWidget.style.borderStyle = 'solid';
 
-        // Show Thumbnail
-        if (els.uploadThumb) {
-            els.uploadThumb.style.display = 'block';
-            els.uploadThumb.src = result;
-        }
-        if (els.uploadWidget) els.uploadWidget.style.borderStyle = 'solid';
-
-        // Show Main Image UNCONDITIONALLY
-        // Removing complex onload/onerror checks that might be blocking display
-        if (els.mainImage) {
-            els.mainImage.src = result;
-        }
-
-        // Ensure wrapper is visible
-        if (els.imageWrapper) {
-            els.imageWrapper.style.display = 'block';
-        }
-
-        // Hide empty state
-        const emptyState = document.querySelector('.empty-state');
-        if (emptyState) emptyState.style.display = 'none';
+        // Show in main canvas immediately
+        els.mainImage.src = e.target.result;
+        els.imageWrapper.style.display = 'block';
+        document.querySelector('.empty-state').style.display = 'none';
 
         updateGenerateButton();
-    };
-    reader.onerror = (err) => {
-        // Only alert on catastrophic read failure
-        console.error(err);
-        alert('Errore lettura immagine');
     };
     reader.readAsDataURL(file);
 }
