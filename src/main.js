@@ -59,9 +59,6 @@ const els = {
     uploadThumb: document.getElementById('usersImageThumb'),
     fabricsGrid: document.getElementById('fabricsGrid'),
     colorsGrid: document.getElementById('colorsGrid'),
-    // Badge counts removed from HTML in recent update, checking existence before use
-    // fabricCount: document.getElementById('fabricCount'), 
-    // colorCount: document.getElementById('colorCount'),
     generateBtn: document.getElementById('generateBtn'),
     toggleOptions: document.querySelectorAll('.toggle-option'),
     imageWrapper: document.getElementById('imageWrapper'),
@@ -127,8 +124,6 @@ async function loadFabrics() {
     } else {
         state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
     }
-
-    // els.fabricCount.textContent = state.fabrics.length; // Removing count update if element is missing
     renderFabrics();
 }
 
@@ -153,8 +148,6 @@ async function loadColors(fabricId) {
     }
 
     state.colors = [...dbColors, ...defaultColors];
-
-    // els.colorCount.textContent = state.colors.length; // Removing count update
     renderColors();
 }
 
@@ -311,29 +304,53 @@ function setupEventListeners() {
 }
 
 function handleImageUpload(file) {
-    if (file.size > 10 * 1024 * 1024) return alert('File troppo grande (max 10MB)');
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) return alert('File troppo grande (max 25MB)');
+
+    // Validate type
+    if (!file.type.match('image.*')) return alert('Per favore carica un file immagine valido');
 
     // Check for FileReader support
     if (!window.FileReader) return alert('Browser non supporta il caricamento file');
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        state.uploadedImage = e.target.result;
-        state.uploadedImageBase64 = e.target.result.split(',')[1];
+        const result = e.target.result;
+
+        // Validation: ensures we have a valid data string
+        if (!result || !result.startsWith('data:image')) {
+            return alert('Errore: Immagine non valida');
+        }
+
+        state.uploadedImage = result;
+        state.uploadedImageBase64 = result.split(',')[1];
 
         // Update Thumb in sidebar
         if (els.uploadThumb) {
-            els.uploadThumb.src = e.target.result;
-            els.uploadThumb.style.display = 'block';
+            els.uploadThumb.onload = () => {
+                els.uploadThumb.style.display = 'block';
+            };
+            els.uploadThumb.onerror = () => {
+                console.error('Thumb display error');
+                els.uploadThumb.style.display = 'none';
+            };
+            els.uploadThumb.src = result;
         }
         if (els.uploadWidget) els.uploadWidget.style.borderStyle = 'solid';
 
         // Show in main canvas immediately
-        if (els.mainImage) els.mainImage.src = e.target.result;
-        if (els.imageWrapper) els.imageWrapper.style.display = 'block';
-
-        const emptyState = document.querySelector('.empty-state');
-        if (emptyState) emptyState.style.display = 'none';
+        if (els.mainImage) {
+            els.mainImage.onload = () => {
+                if (els.imageWrapper) els.imageWrapper.style.display = 'block';
+                const emptyState = document.querySelector('.empty-state');
+                if (emptyState) emptyState.style.display = 'none';
+            };
+            els.mainImage.onerror = () => {
+                alert('Impossibile mostrare questa immagine.');
+                if (els.imageWrapper) els.imageWrapper.style.display = 'none';
+            };
+            els.mainImage.src = result;
+        }
 
         updateGenerateButton();
     };
