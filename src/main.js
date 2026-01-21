@@ -5,6 +5,40 @@ import { getSession, signOut } from './supabase.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// --- Constants ---
+const DEFAULT_FABRICS = [
+    { id: 'f_velvet', name: 'Velluto' },
+    { id: 'f_leather', name: 'Pelle' },
+    { id: 'f_linen', name: 'Lino' },
+    { id: 'f_boucle', name: 'Bouclé' },
+    { id: 'f_cotton', name: 'Cotone' }
+];
+
+const DEFAULT_COLORS = {
+    'f_velvet': [
+        { id: 'c_v_navy', name: 'Blu Navy', hex_value: '#1B365D' },
+        { id: 'c_v_emerald', name: 'Smeraldo', hex_value: '#50C878' },
+        { id: 'c_v_ruby', name: 'Rubino', hex_value: '#E0115F' },
+        { id: 'c_v_gold', name: 'Oro', hex_value: '#FFD700' }
+    ],
+    'f_leather': [
+        { id: 'c_l_brown', name: 'Marrone', hex_value: '#8B4513' },
+        { id: 'c_l_black', name: 'Nero', hex_value: '#000000' },
+        { id: 'c_l_tan', name: 'Cuoio', hex_value: '#D2B48C' }
+    ],
+    'f_linen': [
+        { id: 'c_li_beige', name: 'Beige', hex_value: '#F5F5DC' },
+        { id: 'c_li_grey', name: 'Grigio', hex_value: '#808080' },
+        { id: 'c_li_white', name: 'Bianco', hex_value: '#FFFFFF' }
+    ],
+    'default': [
+        { id: 'c_d_navy', name: 'Blu', hex_value: '#000080' },
+        { id: 'c_d_grey', name: 'Grigio', hex_value: '#808080' },
+        { id: 'c_d_beige', name: 'Beige', hex_value: '#F5F5DC' },
+        { id: 'c_d_black', name: 'Nero', hex_value: '#000000' }
+    ]
+};
+
 // --- State Management ---
 const state = {
     uploadedImage: null,
@@ -71,27 +105,48 @@ async function initAuth() {
 }
 
 // --- Data Fetching ---
+// --- Data Fetching ---
 async function loadFabrics() {
-    const { data, error } = await supabase.from('fabrics').select('*').order('created_at');
-    if (error) return console.error(error);
+    let data = [];
+    try {
+        const response = await supabase.from('fabrics').select('*').order('created_at');
+        if (response.data) data = response.data;
+    } catch (e) { console.error('Supabase error', e); }
 
-    state.fabrics = data;
-    els.fabricCount.textContent = data.length;
+    // Merge or use defaults if empty
+    if (data.length === 0) {
+        state.fabrics = DEFAULT_FABRICS;
+    } else {
+        state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
+    }
+
+    els.fabricCount.textContent = state.fabrics.length;
     renderFabrics();
 }
 
 async function loadColors(fabricId) {
     els.colorsGrid.innerHTML = '<div class="skeleton-loader"></div>';
 
-    const { data, error } = await supabase
-        .from('colors')
-        .select('*')
-        .eq('fabric_id', fabricId)
-        .order('created_at');
+    let dbColors = [];
+    if (!fabricId.startsWith('f_')) { // checking if it's a real DB ID (uuid) or our static ID
+        try {
+            const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
+            if (data) dbColors = data;
+        } catch (e) { console.error(e); }
+    }
 
-    if (error) return console.error(error);
-    state.colors = data;
-    els.colorCount.textContent = data.length;
+    // Get defaults based on fabric ID mapping or generic defaults
+    let defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
+
+    // Special handling: if fabric is one of our static ones, lookup by ID
+    const fabricIsStatic = DEFAULT_FABRICS.find(f => f.id === fabricId);
+    if (fabricIsStatic) {
+        defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
+    }
+
+    state.colors = [...dbColors, ...defaultColors];
+
+    els.colorCount.textContent = state.colors.length;
     renderColors();
 }
 

@@ -61,15 +61,19 @@ body {
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    box-shadow: 1px 0 20px rgba(0, 0, 0, 0.02);
+    /* Subtle shadow for depth */
 }
 
 .sidebar-header {
     height: var(--header-height);
-    padding: 0 20px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
 }
 
 .logo {
