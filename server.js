@@ -110,7 +110,7 @@ Generate the edited image at the highest possible quality.`;
                     console.log('Image generated successfully');
                     res.json({
                         success: true,
-                        image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+                        image: part.inlineData.data  // Return only base64, not full data URL
                     });
                     return;
                 }
