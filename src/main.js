@@ -296,8 +296,51 @@ function setupEventListeners() {
     });
 }
 
-function handleImageUpload(file) {
-    if (file.size > 15 * 1024 * 1024) return alert('File troppo grande (max 15MB)');
+async function handleImageUpload(file) {
+    if (file.size > 20 * 1024 * 1024) return alert('File troppo grande (max 20MB)');
+
+    let processedFile = file;
+
+    // Check for HEIC format and convert if needed
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+        try {
+            // Show loading state
+            els.uploadWidget.innerHTML = '<div style="padding: 20px; text-align: center;"><div class="spinner-large"></div><p style="margin-top: 10px; font-size: 0.8rem;">Conversione HEIC...</p></div>';
+
+            const heic2any = (await import('heic2any')).default;
+            const convertedBlob = await heic2any({
+                blob: file,
+                toType: 'image/jpeg',
+                quality: 0.9
+            });
+
+            processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), {
+                type: 'image/jpeg'
+            });
+
+            // Restore upload widget
+            els.uploadWidget.innerHTML = `
+                <input type="file" id="imageInput" accept="image/*" hidden>
+                <div class="upload-placeholder" onclick="document.getElementById('imageInput').click()">
+                    <div class="icon-camera">📷</div>
+                    <span>Carica Foto</span>
+                </div>
+                <img id="usersImageThumb" class="upload-thumb" style="display: none;">
+            `;
+            // Re-attach event listener
+            document.getElementById('imageInput').addEventListener('change', (e) => {
+                const newFile = e.target.files[0];
+                if (newFile) handleImageUpload(newFile);
+            });
+            // Update els reference
+            els.uploadThumb = document.getElementById('usersImageThumb');
+            els.imageInput = document.getElementById('imageInput');
+        } catch (err) {
+            console.error('HEIC conversion error:', err);
+            alert('Errore nella conversione HEIC. Prova a salvare l\'immagine come JPG prima di caricarla.');
+            return;
+        }
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -357,7 +400,7 @@ function handleImageUpload(file) {
     reader.onerror = () => {
         alert('Errore nella lettura del file');
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processedFile);
 }
 
 // --- Generation Logic ---
