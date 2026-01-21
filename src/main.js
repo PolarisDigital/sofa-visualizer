@@ -377,14 +377,30 @@ async function handleImageUpload(file) {
                 state.uploadedImageBase64 = jpegDataUrl.split(',')[1];
 
                 // Update Thumb in sidebar
-                els.uploadThumb.src = jpegDataUrl;
-                els.uploadThumb.style.display = 'block';
-                els.uploadWidget.style.borderStyle = 'solid';
+                if (els.uploadThumb) {
+                    els.uploadThumb.src = jpegDataUrl;
+                    els.uploadThumb.style.display = 'block';
+                }
+                if (els.uploadWidget) {
+                    els.uploadWidget.style.borderStyle = 'solid';
+                }
 
-                // Show in main canvas
-                els.mainImage.src = jpegDataUrl;
-                els.imageWrapper.style.display = 'block';
-                document.querySelector('.empty-state').style.display = 'none';
+                // Show in main canvas - get fresh reference
+                const mainImg = document.getElementById('mainImage');
+                const imgWrapper = document.getElementById('imageWrapper');
+                const emptyState = document.querySelector('.empty-state');
+
+                if (mainImg) {
+                    mainImg.src = jpegDataUrl;
+                    els.mainImage = mainImg; // Update reference
+                }
+                if (imgWrapper) {
+                    imgWrapper.style.display = 'block';
+                    els.imageWrapper = imgWrapper;
+                }
+                if (emptyState) {
+                    emptyState.style.display = 'none';
+                }
 
                 updateGenerateButton();
             } catch (err) {
