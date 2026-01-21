@@ -39,39 +39,32 @@
         </section>
 
         <!-- Fabrics Section -->
-        <section class="control-section accordion-item open" id="fabricsSection">
-          <div class="accordion-header" onclick="toggleAccordion('fabricsSection')">
-            <h3>Scegli Tessuto</h3>
-            <span class="chevron">▼</span>
+        <section class="control-section">
+          <div class="section-header">
+            <h3>Tessuto</h3>
+            <span class="badge" id="fabricCount">0</span>
           </div>
-          <div class="accordion-content">
-            <div class="grid-fabrics" id="fabricsGrid">
-              <!-- Populated by JS -->
-              <div class="skeleton-loader"></div>
-              <div class="skeleton-loader"></div>
-            </div>
+          <div class="grid-fabrics" id="fabricsGrid">
+            <!-- Populated by JS -->
+            <div class="skeleton-loader"></div>
+            <div class="skeleton-loader"></div>
           </div>
         </section>
 
         <!-- Colors Section -->
-        <section class="control-section accordion-item open" id="colorsSection">
-          <div class="accordion-header" onclick="toggleAccordion('colorsSection')">
-            <h3>Scegli Colore</h3>
-            <span class="chevron">▼</span>
+        <section class="control-section">
+          <div class="section-header">
+            <h3>Colore</h3>
+            <span class="badge" id="colorCount">0</span>
           </div>
-          <div class="accordion-content">
-            <!-- Output Toggle -->
-            <div class="style-selector">
-              <div class="style-label">Scegli stile immagine</div>
-              <div class="toggle-switch mb-3">
-                <button class="toggle-option active" data-mode="ambientato">Ambientato</button>
-                <button class="toggle-option" data-mode="scontornato">Scontornato</button>
-              </div>
-            </div>
+          <!-- Output Toggle -->
+          <div class="toggle-switch mb-3">
+            <button class="toggle-option active" data-mode="ambientato">Ambientato</button>
+            <button class="toggle-option" data-mode="scontornato">Scontornato</button>
+          </div>
 
-            <div class="grid-colors" id="colorsGrid">
-              <div class="empty-hint">Seleziona un tessuto per vedere i colori</div>
-            </div>
+          <div class="grid-colors" id="colorsGrid">
+            <div class="empty-hint">Seleziona un tessuto per vedere i colori</div>
           </div>
         </section>
       </div>
@@ -90,8 +83,8 @@
       <div class="canvas-header">
         <div class="canvas-title">Anteprima</div>
         <div class="canvas-actions">
-          <button class="text-btn" id="downloadBtn" title="Scarica l'immagine" disabled>Download</button>
-          <button class="text-btn" id="shareBtn" title="Condividi il risultato" disabled>Condividi</button>
+          <button class="icon-btn" id="downloadBtn" title="Scarica" disabled>⬇️</button>
+          <button class="icon-btn" id="shareBtn" title="Condividi" disabled>📤</button>
         </div>
       </div>
 

@@ -5,40 +5,6 @@ import { getSession, signOut } from './supabase.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- Constants ---
-const DEFAULT_FABRICS = [
-    { id: 'f_velvet', name: 'Velluto' },
-    { id: 'f_leather', name: 'Pelle' },
-    { id: 'f_linen', name: 'Lino' },
-    { id: 'f_boucle', name: 'Bouclé' },
-    { id: 'f_cotton', name: 'Cotone' }
-];
-
-const DEFAULT_COLORS = {
-    'f_velvet': [
-        { id: 'c_v_navy', name: 'Blu Navy', hex_value: '#1B365D' },
-        { id: 'c_v_emerald', name: 'Smeraldo', hex_value: '#50C878' },
-        { id: 'c_v_ruby', name: 'Rubino', hex_value: '#E0115F' },
-        { id: 'c_v_gold', name: 'Oro', hex_value: '#FFD700' }
-    ],
-    'f_leather': [
-        { id: 'c_l_brown', name: 'Marrone', hex_value: '#8B4513' },
-        { id: 'c_l_black', name: 'Nero', hex_value: '#000000' },
-        { id: 'c_l_tan', name: 'Cuoio', hex_value: '#D2B48C' }
-    ],
-    'f_linen': [
-        { id: 'c_li_beige', name: 'Beige', hex_value: '#F5F5DC' },
-        { id: 'c_li_grey', name: 'Grigio', hex_value: '#808080' },
-        { id: 'c_li_white', name: 'Bianco', hex_value: '#FFFFFF' }
-    ],
-    'default': [
-        { id: 'c_d_navy', name: 'Blu', hex_value: '#000080' },
-        { id: 'c_d_grey', name: 'Grigio', hex_value: '#808080' },
-        { id: 'c_d_beige', name: 'Beige', hex_value: '#F5F5DC' },
-        { id: 'c_d_black', name: 'Nero', hex_value: '#000000' }
-    ]
-};
-
 // --- State Management ---
 const state = {
     uploadedImage: null,
@@ -51,40 +17,31 @@ const state = {
     colors: []
 };
 
-// --- DOM Elements (initialized after DOMContentLoaded) ---
-let els = {};
-
-// --- ACCORDION LOGIC (Global) ---
-window.toggleAccordion = (id) => {
-    const section = document.getElementById(id);
-    if (section) {
-        section.classList.toggle('open');
-    }
-}
+// --- DOM Elements ---
+const els = {
+    userMenu: document.getElementById('userMenu'),
+    imageInput: document.getElementById('imageInput'),
+    uploadWidget: document.getElementById('uploadWidget'),
+    uploadThumb: document.getElementById('usersImageThumb'),
+    fabricsGrid: document.getElementById('fabricsGrid'),
+    colorsGrid: document.getElementById('colorsGrid'),
+    fabricCount: document.getElementById('fabricCount'),
+    colorCount: document.getElementById('colorCount'),
+    generateBtn: document.getElementById('generateBtn'),
+    toggleOptions: document.querySelectorAll('.toggle-option'),
+    imageWrapper: document.getElementById('imageWrapper'),
+    canvasViewer: document.getElementById('canvasViewer'),
+    canvasLoading: document.getElementById('canvasLoading'),
+    mainImage: document.getElementById('mainImage'),
+    downloadBtn: document.getElementById('downloadBtn'),
+    shareBtn: document.getElementById('shareBtn'),
+    lightbox: document.getElementById('lightbox'),
+    lightboxImg: document.getElementById('lightboxImg'),
+    closeLightbox: document.querySelector('.close-lightbox')
+};
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize DOM elements AFTER page is loaded
-    els = {
-        userMenu: document.getElementById('userMenu'),
-        imageInput: document.getElementById('imageInput'),
-        uploadWidget: document.getElementById('uploadWidget'),
-        uploadThumb: document.getElementById('usersImageThumb'),
-        fabricsGrid: document.getElementById('fabricsGrid'),
-        colorsGrid: document.getElementById('colorsGrid'),
-        generateBtn: document.getElementById('generateBtn'),
-        toggleOptions: document.querySelectorAll('.toggle-option'),
-        imageWrapper: document.getElementById('imageWrapper'),
-        canvasViewer: document.getElementById('canvasViewer'),
-        canvasLoading: document.getElementById('canvasLoading'),
-        mainImage: document.getElementById('mainImage'),
-        downloadBtn: document.getElementById('downloadBtn'),
-        shareBtn: document.getElementById('shareBtn'),
-        lightbox: document.getElementById('lightbox'),
-        lightboxImg: document.getElementById('lightboxImg'),
-        closeLightbox: document.querySelector('.close-lightbox')
-    };
-
     await initAuth();
     await loadFabrics();
     setupEventListeners();
@@ -99,7 +56,7 @@ async function initAuth() {
         els.userMenu.innerHTML = `
             <div style="display: flex; gap: 10px; align-items: center;">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">${state.user.email}</span>
-                <button class="text-btn" style="padding: 4px 10px; font-size: 0.75rem;" id="logoutBtn">Esci</button>
+                <button class="btn-generate" style="padding: 6px 12px; font-size: 0.75rem; width: auto;" id="logoutBtn">Esci</button>
             </div>
         `;
         document.getElementById('logoutBtn').onclick = async () => {
@@ -115,57 +72,48 @@ async function initAuth() {
 
 // --- Data Fetching ---
 async function loadFabrics() {
-    let data = [];
-    try {
-        const response = await supabase.from('fabrics').select('*').order('created_at');
-        if (response.data) data = response.data;
-    } catch (e) { console.error('Supabase error', e); }
+    const { data, error } = await supabase.from('fabrics').select('*').order('created_at');
+    if (error) return console.error(error);
 
-    if (data.length === 0) {
-        state.fabrics = DEFAULT_FABRICS;
-    } else {
-        state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
-    }
+    state.fabrics = data;
+    els.fabricCount.textContent = data.length;
     renderFabrics();
 }
 
 async function loadColors(fabricId) {
     els.colorsGrid.innerHTML = '<div class="skeleton-loader"></div>';
 
-    let dbColors = [];
-    if (!fabricId.startsWith('f_')) {
-        try {
-            const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
-            if (data) dbColors = data;
-        } catch (e) { console.error(e); }
-    }
+    const { data, error } = await supabase
+        .from('colors')
+        .select('*')
+        .eq('fabric_id', fabricId)
+        .order('created_at');
 
-    let defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-    const fabricIsStatic = DEFAULT_FABRICS.find(f => f.id === fabricId);
-    if (fabricIsStatic) {
-        defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-    }
-
-    state.colors = [...dbColors, ...defaultColors];
+    if (error) return console.error(error);
+    state.colors = data;
+    els.colorCount.textContent = data.length;
     renderColors();
 }
 
 // --- Rendering ---
+// Rendering
 function renderFabrics() {
     els.fabricsGrid.innerHTML = state.fabrics.map(f => {
+        // Fallback or Image for fabric
         const content = f.preview_url
             ? `<img src="${f.preview_url}" alt="${f.name}">`
-            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #f0f0f0;">🧵</div>`;
+            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #3f3f46;">🧵</div>`;
 
         return `
         <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}" title="${f.name}">
-            <div class="content-box">
+            <div style="height: 80px; width: 100%; position: relative; overflow: hidden; border-radius: 4px;">
                ${content}
             </div>
-            <div class="fabric-name">${f.name}</div>
+            <div class="fabric-name mt-2">${f.name}</div>
         </div>
     `}).join('');
 
+    // Attach events
     document.querySelectorAll('.fabric-card').forEach(card => {
         card.addEventListener('click', () => {
             const fabric = state.fabrics.find(f => f.id === card.dataset.id);
@@ -181,9 +129,10 @@ function renderColors() {
     }
 
     els.colorsGrid.innerHTML = state.colors.map(c => {
+        // Fallback: Use hex color if no image
         const style = !c.preview_url && c.hex_value
             ? `background-color: ${c.hex_value};`
-            : 'background-color: #f0f0f0;';
+            : 'background-color: #3f3f46;'; // Default gray
 
         const content = c.preview_url
             ? `<img src="${c.preview_url}" alt="${c.name}">`
@@ -206,8 +155,8 @@ function renderColors() {
 // --- Interactions ---
 function selectFabric(fabric) {
     state.selectedFabric = fabric;
-    state.selectedColor = null;
-    renderFabrics();
+    state.selectedColor = null; // Reset color
+    renderFabrics(); // Re-render to update selected UI
     loadColors(fabric.id);
     updateGenerateButton();
 }
@@ -226,6 +175,7 @@ function updateGenerateButton() {
 
 // --- Image Handling ---
 function setupEventListeners() {
+    // Check Auth before actions
     const checkAuthAction = () => {
         if (!state.user) {
             window.location.href = '/login.html';
@@ -234,8 +184,9 @@ function setupEventListeners() {
         return true;
     };
 
-    // Upload - REMOVED AUTH CHECK (was blocking even logged-in users)
+    // Upload
     els.imageInput.addEventListener('change', (e) => {
+        if (!checkAuthAction()) return;
         const file = e.target.files[0];
         if (file) handleImageUpload(file);
     });
@@ -287,7 +238,6 @@ function setupEventListeners() {
     });
 }
 
-// ORIGINAL WORKING handleImageUpload - NO EXTRA CHECKS
 function handleImageUpload(file) {
     if (file.size > 10 * 1024 * 1024) return alert('File troppo grande (max 10MB)');
 
@@ -315,10 +265,13 @@ function handleImageUpload(file) {
 async function generateImage() {
     if (!state.uploadedImage || !state.selectedColor) return;
 
+    // UI Loading
     els.canvasLoading.style.display = 'flex';
     els.generateBtn.disabled = true;
 
     try {
+        // Construct intelligent prompt using DB Data
+        // Combine fabric name + color name + optional texture prompt
         const promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}. ${state.selectedColor.texture_prompt || ''}`;
 
         const response = await fetch(`${window.BACKEND_URL}/api/gemini/edit`, {
@@ -327,7 +280,7 @@ async function generateImage() {
             body: JSON.stringify({
                 imageBase64: state.uploadedImageBase64,
                 prompt: promptText,
-                userId: state.user?.id || 'guest',
+                userId: state.user.id,
                 outputMode: state.outputMode
             })
         });
@@ -336,9 +289,11 @@ async function generateImage() {
 
         if (!data.success) throw new Error(data.error);
 
+        // Success
         const resultSrc = `data:image/jpeg;base64,${data.image}`;
         els.mainImage.src = resultSrc;
 
+        // Enable actions
         els.downloadBtn.disabled = false;
         els.shareBtn.disabled = false;
 
