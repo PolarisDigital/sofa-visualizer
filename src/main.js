@@ -436,16 +436,28 @@ async function generateImage() {
         // Combine fabric name + color name + optional texture prompt
         const promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}. ${state.selectedColor.texture_prompt || ''}`;
 
+        console.log('Starting generation with:', {
+            prompt: promptText,
+            imageLength: state.uploadedImageBase64?.length,
+            userId: state.user?.id
+        });
+
+        // Add timeout for the fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
         const response = await fetch(`${window.BACKEND_URL}/api/gemini/edit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 imageBase64: state.uploadedImageBase64,
                 prompt: promptText,
-                userId: state.user.id,
+                userId: state.user?.id || 'guest',
                 outputMode: state.outputMode
-            })
+            }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         const data = await response.json();
 
