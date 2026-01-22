@@ -139,6 +139,6 @@ Generate the result as if shot with a high-end Hasselblad camera.`;
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Sofa Visualizer API running on port ${PORT}`);
+    console.log(`🚀 Sofa Visualizer API running on port ${PORT} (v2.0 Flash Stable)`);
     console.log(`   POST /api/gemini/edit - Image editing with Gemini`);
 });
