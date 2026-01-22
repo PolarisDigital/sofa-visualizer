@@ -60,17 +60,22 @@
             <span class="chevron">▼</span>
           </div>
           <div class="accordion-content">
-            <!-- Output Toggle -->
-            <div class="style-selector">
-              <div class="style-label">Scegli stile immagine</div>
-              <div class="toggle-switch mb-3">
-                <button class="toggle-option active" data-mode="ambientato">Ambientato</button>
-                <button class="toggle-option" data-mode="scontornato">Scontornato</button>
-              </div>
-            </div>
-
             <div class="grid-colors" id="colorsGrid">
-              <div class="empty-hint">Seleziona un tessuto per vedere i colori</div>
+              <!-- Colors populate here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Style Section -->
+        <section class="control-section accordion-item open" id="styleSection">
+          <div class="accordion-header" onclick="toggleAccordion('styleSection')">
+            <h3>Scegli Stile</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="accordion-content">
+            <div class="toggle-switch">
+              <button class="toggle-option active" data-mode="ambientato">Ambientato</button>
+              <button class="toggle-option" data-mode="scontornato">Scontornato</button>
             </div>
           </div>
         </section>
