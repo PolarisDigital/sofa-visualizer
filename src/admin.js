@@ -23,6 +23,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Basic Admin Check (Client Side Only - RLS handles Real Security)
+    const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it']; // Add your email here
+    if (!ADMIN_EMAILS.includes(session.user.email)) {
+        alert('Accesso negato. Area riservata agli amministratori.');
+        window.location.href = '/';
+        return;
+    }
+
     loadFabrics();
 });
 
@@ -141,7 +149,7 @@ document.getElementById('newColorForm').addEventListener('submit', async (e) => 
     // Upload image
     const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('fabric-textures')
+        .from('textures')
         .upload(fileName, file);
 
     if (uploadError) {
@@ -151,7 +159,7 @@ document.getElementById('newColorForm').addEventListener('submit', async (e) => 
 
     // Get Public URL
     const { data: { publicUrl } } = supabase.storage
-        .from('fabric-textures')
+        .from('textures')
         .getPublicUrl(fileName);
 
     // Save to DB
