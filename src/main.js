@@ -247,6 +247,12 @@ function selectColor(color) {
     state.selectedColor = color;
     renderColors();
     updateGenerateButton();
+
+    // Auto-open Style Accordion
+    const styleSection = document.getElementById('styleSection');
+    if (styleSection && !styleSection.classList.contains('open')) {
+        setTimeout(() => styleSection.classList.add('open'), 300);
+    }
 }
 
 function updateGenerateButton() {
