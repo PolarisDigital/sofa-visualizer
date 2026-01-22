@@ -113,18 +113,47 @@ async function loadFabrics() {
     }
 
     allFabrics = data; // Store global
-    fabricsList.innerHTML = '';
+    renderFabricsListFromMemory();
+}
 
-    if (data.length === 0) {
-        fabricsList.innerHTML = '<div class="text-center p-4">Nessun tessuto</div>';
-        return;
+// Toggle Fabric Visibility (Optimistic Update)
+window.toggleFabric = async (id, isActive) => {
+    // 1. Optimistic Update (Immediate UI Change)
+    const fabricIndex = allFabrics.findIndex(f => f.id === id);
+    if (fabricIndex > -1) {
+        allFabrics[fabricIndex].is_active = isActive;
+        updateFabricDOM(id, isActive); // New helper to update just this item
     }
 
-    data.forEach(fabric => {
+    // 2. Background DB Update
+    const { error } = await supabase.from('fabrics').update({ is_active: isActive }).eq('id', id);
+
+    if (error) {
+        alert('Errore aggiornamento: ' + error.message);
+        // Revert on error
+        if (fabricIndex > -1) {
+            allFabrics[fabricIndex].is_active = !isActive;
+            updateFabricDOM(id, !isActive);
+            // Also revert checkbox
+            const checkbox = document.querySelector(`input[onchange="toggleFabric('${id}', this.checked)"]`);
+            if (checkbox) checkbox.checked = !isActive;
+        }
+    }
+}
+
+function updateFabricDOM(id, isActive) {
+    // Find the rendered element
+    // Since we don't have IDs on the DIVs, we might need to rely on the button onclick or add IDs to rows
+    // It's cleaner to re-render the list from local memory since that is instant (no network)
+    renderFabricsListFromMemory();
+}
+
+function renderFabricsListFromMemory() {
+    fabricsList.innerHTML = '';
+    allFabrics.forEach(fabric => {
         const div = document.createElement('div');
         div.className = `fabric-item ${selectedFabricId === fabric.id ? 'active' : ''}`;
 
-        // Default is_active to true if null
         const isActive = fabric.is_active !== false;
 
         div.innerHTML = `
@@ -136,15 +165,13 @@ async function loadFabrics() {
             </div>
             
             <div style="display:flex; align-items:center;">
-                <!-- Toggle Switch -->
                 <label class="switch" title="Attiva/Disattiva" onclick="event.stopPropagation()">
                     <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleFabric('${fabric.id}', this.checked)">
                     <span class="slider"></span>
                 </label>
 
-                <!-- SVG Edit Button -->
                 <button class="edit-btn" onclick="event.stopPropagation(); editFabric('${fabric.id}')" title="Modifica" style="background:none; border:none; cursor:pointer; padding:8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
@@ -153,20 +180,6 @@ async function loadFabrics() {
         `;
         fabricsList.appendChild(div);
     });
-}
-
-// Toggle Fabric Visibility
-window.toggleFabric = async (id, isActive) => {
-    const { error } = await supabase.from('fabrics').update({ is_active: isActive }).eq('id', id);
-    if (error) {
-        alert('Errore aggiornamento: ' + error.message);
-        loadFabrics(); // Revert UI on error
-    } else {
-        // Update local state without full reload
-        const fabric = allFabrics.find(f => f.id === id);
-        if (fabric) fabric.is_active = isActive;
-        loadFabrics();
-    }
 }
 
 // Modal Handling
