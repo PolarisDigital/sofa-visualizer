@@ -31,14 +31,30 @@
     outline: none;
 }
 
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 body {
     /* THIN MODERN FONT - Orbai Style */
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 300;
     /* Thinner base weight */
 
-    /* DEFINITIVE BLUE GRADIENT */
-    background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 100%);
+    /* ANIMATED MESH GRADIENT */
+    background: linear-gradient(-45deg, #eff6ff, #dbeafe, #bfdbfe, #93c5fd);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     background-color: #3b82f6;
     height: 100vh;
     overflow: hidden;
@@ -545,6 +561,65 @@ body {
     font-size: 2rem;
     cursor: pointer;
     opacity: 0.5;
+}
+
+/* User Profile UI */
+.user-profile-widget {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 4px 6px 4px 12px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.2s;
+}
+
+.user-profile-widget:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.user-info-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-logout-mini {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-logout-mini:hover {
+    color: #ef4444;
+    background: #fee2e2;
 }
 
 /* Mobile */

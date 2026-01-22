@@ -95,10 +95,22 @@ async function initAuth() {
     state.user = session?.user;
 
     if (state.user) {
+        // Get initial from email
+        const initial = state.user.email.charAt(0).toUpperCase();
+        // Get username (part before @)
+        const username = state.user.email.split('@')[0];
+
         els.userMenu.innerHTML = `
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">${state.user.email}</span>
-                <button class="btn-generate" style="padding: 6px 12px; font-size: 0.75rem; width: auto;" id="logoutBtn">Esci</button>
+            <div class="user-profile-widget">
+                <div class="user-avatar">${initial}</div>
+                <div class="user-info-text">${username}</div>
+                <button class="btn-logout-mini" id="logoutBtn" title="Esci">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
             </div>
         `;
         document.getElementById('logoutBtn').onclick = async () => {
