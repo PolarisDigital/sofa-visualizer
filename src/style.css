@@ -142,6 +142,12 @@ body {
 .upload-widget:hover {
     background: white;
     border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.upload-widget:active {
+    transform: scale(0.98);
 }
 
 .upload-placeholder {
@@ -182,7 +188,12 @@ body {
 }
 
 .accordion-header:hover {
-    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-left: -8px;
+    margin-right: -8px;
 }
 
 /* THIN, MINIMAL HEADERS */
@@ -253,6 +264,11 @@ body {
 
 .toggle-option:hover {
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.toggle-option:active {
+    transform: scale(0.96);
 }
 
 .toggle-option.active {
@@ -281,6 +297,11 @@ body {
 .fabric-card:hover {
     background: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.fabric-card:active {
+    transform: scale(0.96);
 }
 
 .fabric-card.selected {
@@ -332,7 +353,12 @@ body {
 }
 
 .color-item:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.color-item:active {
+    transform: scale(0.9);
 }
 
 .color-item.selected {
@@ -375,6 +401,12 @@ body {
 .btn-generate:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-generate:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .credits {
