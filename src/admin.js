@@ -102,6 +102,18 @@ async function loadColors(fabricId) {
 
 function renderColors(colors) {
     colorsGrid.innerHTML = '';
+
+    if (colors.length === 0) {
+        colorsGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px dashed var(--border-light);">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🎨</div>
+                <p>Nessun colore per questo tessuto.</p>
+                <p style="font-size: 0.9rem;">Clicca su "+ Aggiungi Colore" in alto a destra per iniziare.</p>
+            </div>
+        `;
+        return;
+    }
+
     colors.forEach(color => {
         const div = document.createElement('div');
         div.className = 'color-card';

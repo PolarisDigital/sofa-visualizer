@@ -79,10 +79,19 @@
             align-items: center;
         }
 
-        .fabric-item:hover,
-        .fabric-item.active {
+        .fabric-item:hover {
             border-color: var(--accent);
-            background: var(--bg-primary);
+            background: #f0f9ff;
+        }
+
+        .fabric-item.active {
+            background: var(--accent) !important;
+            color: white !important;
+            border-color: var(--accent) !important;
+        }
+
+        .fabric-item.active .text-secondary {
+            color: rgba(255, 255, 255, 0.8) !important;
         }
 
         /* Colors Grid */
