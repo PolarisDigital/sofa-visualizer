@@ -88,6 +88,12 @@ body {
     letter-spacing: -0.03em;
 }
 
+.custom-logo {
+    max-height: 40px;
+    max-width: 140px;
+    object-fit: contain;
+}
+
 .sidebar-scroll {
     flex: 1;
     overflow-y: auto;
@@ -360,6 +366,17 @@ body {
     font-size: 0.7rem;
     color: var(--text-muted);
     margin-top: 12px;
+}
+
+.credits a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.credits a:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
 /* ================= MAIN CANVAS ================= */

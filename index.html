@@ -19,7 +19,9 @@
     <!-- LEFT SIDEBAR: CONTROLS -->
     <aside class="sidebar">
       <header class="sidebar-header">
-        <div class="logo">Fabric<span>AI</span></div>
+        <div class="logo-container" id="logoContainer">
+          <div class="logo">Fabric<span>AI</span></div>
+        </div>
         <div class="user-menu-compact" id="userMenu">
           <!-- Injected by JS -->
         </div>
@@ -39,7 +41,7 @@
         </section>
 
         <!-- Fabrics Section -->
-        <section class="control-section accordion-item open" id="fabricsSection">
+        <section class="control-section accordion-item" id="fabricsSection">
           <div class="accordion-header" onclick="toggleAccordion('fabricsSection')">
             <h3>Scegli Tessuto</h3>
             <span class="chevron">▼</span>
@@ -54,7 +56,7 @@
         </section>
 
         <!-- Colors Section -->
-        <section class="control-section accordion-item open" id="colorsSection">
+        <section class="control-section accordion-item" id="colorsSection">
           <div class="accordion-header" onclick="toggleAccordion('colorsSection')">
             <h3>Scegli Colore</h3>
             <span class="chevron">▼</span>
@@ -67,7 +69,7 @@
         </section>
 
         <!-- Style Section -->
-        <section class="control-section accordion-item open" id="styleSection">
+        <section class="control-section accordion-item" id="styleSection">
           <div class="accordion-header" onclick="toggleAccordion('styleSection')">
             <h3>Scegli Stile</h3>
             <span class="chevron">▼</span>
@@ -86,7 +88,9 @@
           <span class="btn-text">Genera Anteprima</span>
           <span class="loading-spinner" style="display: none;"></span>
         </button>
-        <div class="credits">Powered by Gemini 2.0</div>
+        <div class="credits">
+          Powered by <a href="https://polarisdigital.it" target="_blank">Polaris AI | Digital Solution</a>
+        </div>
       </footer>
     </aside>
 

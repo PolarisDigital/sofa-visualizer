@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await initAuth();
     await loadFabrics();
+    loadCompanySettings();
     setupEventListeners();
 });
 
@@ -230,6 +231,18 @@ function updateGenerateButton() {
     const ready = state.uploadedImage && state.selectedFabric && state.selectedColor;
     els.generateBtn.disabled = !ready;
     if (ready) els.generateBtn.classList.add('pulse');
+}
+
+// --- Company Settings (Logo) ---
+function loadCompanySettings() {
+    // Check local storage for custom logo (simulating admin setting)
+    const customLogo = localStorage.getItem('company_logo');
+    if (customLogo) {
+        const logoContainer = document.getElementById('logoContainer');
+        if (logoContainer) {
+            logoContainer.innerHTML = `<img src="${customLogo}" alt="Company Logo" class="custom-logo">`;
+        }
+    }
 }
 
 // --- Image Handling ---
