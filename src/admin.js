@@ -123,17 +123,50 @@ async function loadFabrics() {
     data.forEach(fabric => {
         const div = document.createElement('div');
         div.className = `fabric-item ${selectedFabricId === fabric.id ? 'active' : ''}`;
+
+        // Default is_active to true if null
+        const isActive = fabric.is_active !== false;
+
         div.innerHTML = `
             <div onclick="selectFabric('${fabric.id}')" style="flex:1;">
-                <div style="font-weight:600;">${fabric.name}</div>
+                <div style="font-weight:600; ${!isActive ? 'opacity:0.5;' : ''}">${fabric.name} ${!isActive ? '(Inactive)' : ''}</div>
                 <div class="text-secondary" style="font-size:0.85rem; margin-top:4px;">
                     ${fabric.description ? fabric.description.substring(0, 50) + '...' : ''}
                 </div>
             </div>
-            <button class="edit-btn" onclick="editFabric('${fabric.id}')" title="Modifica" style="background:none; border:none; cursor:pointer; font-size:1.1rem; padding:4px;">✏️</button>
+            
+            <div style="display:flex; align-items:center;">
+                <!-- Toggle Switch -->
+                <label class="switch" title="Attiva/Disattiva" onclick="event.stopPropagation()">
+                    <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleFabric('${fabric.id}', this.checked)">
+                    <span class="slider"></span>
+                </label>
+
+                <!-- SVG Edit Button -->
+                <button class="edit-btn" onclick="event.stopPropagation(); editFabric('${fabric.id}')" title="Modifica" style="background:none; border:none; cursor:pointer; padding:8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
+            </div>
         `;
         fabricsList.appendChild(div);
     });
+}
+
+// Toggle Fabric Visibility
+window.toggleFabric = async (id, isActive) => {
+    const { error } = await supabase.from('fabrics').update({ is_active: isActive }).eq('id', id);
+    if (error) {
+        alert('Errore aggiornamento: ' + error.message);
+        loadFabrics(); // Revert UI on error
+    } else {
+        // Update local state without full reload
+        const fabric = allFabrics.find(f => f.id === id);
+        if (fabric) fabric.is_active = isActive;
+        loadFabrics();
+    }
 }
 
 // Modal Handling

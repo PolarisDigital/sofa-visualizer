@@ -143,7 +143,12 @@ async function initAuth() {
 async function loadFabrics() {
     let data = [];
     try {
-        const response = await supabase.from('fabrics').select('*').order('created_at');
+        // Fetch only active fabrics
+        const response = await supabase.from('fabrics')
+            .select('*')
+            .eq('is_active', true) // Only active
+            .order('created_at');
+
         if (response.data) data = response.data;
     } catch (e) { console.error('Supabase error', e); }
 
