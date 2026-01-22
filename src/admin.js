@@ -34,52 +34,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadFabrics();
 });
 
-// Load Fabrics
-async function loadFabrics() {
-    fabricsList.innerHTML = '<div class="text-center p-4">Caricamento...</div>';
+// Select Fabric Logic
+window.selectFabric = function (id) {
+    selectedFabricId = id;
 
-    const { data, error } = await supabase
-        .from('fabrics')
-        .select('*')
-        .order('created_at', { ascending: false });
+    // Update UI active state manually to avoid full reload
+    document.querySelectorAll('.fabric-item').forEach(el => el.classList.remove('active'));
+    // We need to find the element. Since we don't have direct ref, reloading is safer for consistency
+    // but let's try to just reload the list which is fast
+    loadFabrics();
 
-    if (error) {
-        alert('Errore caricamento tessuti');
-        console.error(error);
-        return;
+    const fabric = allFabrics.find(f => f.id === id);
+    if (fabric) {
+        emptyState.style.display = 'none';
+        colorsPanel.style.display = 'block';
+        selectedFabricTitle.textContent = `Colori: ${fabric.name}`;
+        loadColors(id);
+        if (window.hideAddColorForm) window.hideAddColorForm();
     }
-
-    fabrics = data;
-    renderFabrics();
-}
-
-function renderFabrics() {
-    fabricsList.innerHTML = '';
-    fabrics.forEach(fabric => {
-        const div = document.createElement('div');
-        div.className = `fabric-item ${selectedFabricId === fabric.id ? 'active' : ''}`;
-        div.innerHTML = `
-            <div>
-                <div class="font-bold">${fabric.name}</div>
-                <div class="text-xs text-secondary">${fabric.description || ''}</div>
-            </div>
-            <div>›</div>
-        `;
-        div.onclick = () => selectFabric(fabric);
-        fabricsList.appendChild(div);
-    });
-}
-
-function selectFabric(fabric) {
-    selectedFabricId = fabric.id;
-    renderFabrics();
-
-    emptyState.style.display = 'none';
-    colorsPanel.style.display = 'block';
-    selectedFabricTitle.textContent = `Colori: ${fabric.name}`;
-
-    loadColors(fabric.id);
-    hideAddColorForm();
 }
 
 // Load Colors
