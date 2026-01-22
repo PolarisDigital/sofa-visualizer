@@ -258,7 +258,19 @@
                                 <label>Descrizione</label>
                                 <textarea id="fabricDesc" rows="3"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary w-full">Salva Tessuto</button>
+
+                            <div class="form-group">
+                                <label>Anteprima Tessuto (Opzionale)</label>
+                                <input type="file" id="fabricPreview" accept="image/*" hidden
+                                    onchange="previewFabric(this)">
+                                <div class="upload-preview" style="height: 100px;"
+                                    onclick="document.getElementById('fabricPreview').click()">
+                                    <span id="fabricUploadPlaceholder" style="font-size: 0.8rem;">Carica immagine</span>
+                                    <img id="fabricPreviewImg" style="display: none;">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-full mt-4">Salva Tessuto</button>
                             <button type="button" class="btn btn-secondary w-full mt-2"
                                 onclick="hideAddFabricForm()">Annulla</button>
                         </form>

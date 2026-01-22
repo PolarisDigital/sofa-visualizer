@@ -121,16 +121,54 @@ document.getElementById('newFabricForm').addEventListener('submit', async (e) =>
     e.preventDefault();
     const name = document.getElementById('fabricName').value;
     const description = document.getElementById('fabricDesc').value;
+    const file = document.getElementById('fabricPreview').files[0];
 
-    const { error } = await supabase.from('fabrics').insert({ name, description });
+    let previewUrl = null;
 
-    if (error) alert('Errore creazione tessuto');
+    if (file) {
+        const fileName = `fabric_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+        const { error: uploadError } = await supabase.storage
+            .from('textures')
+            .upload(fileName, file);
+
+        if (uploadError) {
+            alert('Errore upload immagine: ' + uploadError.message);
+            return;
+        }
+
+        const { data } = supabase.storage.from('textures').getPublicUrl(fileName);
+        previewUrl = data.publicUrl;
+    }
+
+    const { error } = await supabase.from('fabrics').insert({
+        name,
+        description,
+        preview_url: previewUrl
+    });
+
+    if (error) alert('Errore creazione tessuto: ' + error.message);
     else {
         hideAddFabricForm();
         loadFabrics();
         document.getElementById('newFabricForm').reset();
+        document.getElementById('fabricPreviewImg').style.display = 'none';
+        document.getElementById('fabricUploadPlaceholder').style.display = 'block';
     }
 });
+
+// Helper for fabric preview
+window.previewFabric = function (input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const preview = document.getElementById('fabricPreviewImg');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            document.getElementById('fabricUploadPlaceholder').style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
 // Add Color
 document.getElementById('newColorForm').addEventListener('submit', async (e) => {
