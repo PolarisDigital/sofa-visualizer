@@ -38,9 +38,9 @@ app.post('/api/gemini/edit', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(googleApiKey);
 
-        // Use Gemini 2.0 Flash for image editing
+        // Use Gemini 1.5 Pro for higher quality image editing
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-1.5-pro-latest", // Switching to Pro for better details
             generationConfig: {
                 responseModalities: ["image", "text"],
             }
