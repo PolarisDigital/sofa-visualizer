@@ -178,10 +178,10 @@ function renderFabrics() {
 
         return `
         <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}" title="${f.name}">
-            <div style="height: 80px; width: 100%; position: relative; overflow: hidden; border-radius: 4px;">
+            <div class="content-box">
                ${content}
             </div>
-            <div class="fabric-name mt-2">${f.name}</div>
+            <div class="fabric-name">${f.name}</div>
         </div>
     `}).join('');
 
@@ -201,22 +201,26 @@ function renderColors() {
     }
 
     els.colorsGrid.innerHTML = state.colors.map(c => {
-        // Fallback: Use hex color if no image
-        const style = !c.preview_url && c.hex_value
-            ? `background-color: ${c.hex_value};`
-            : 'background-color: #3f3f46;'; // Default gray
+        // Fallback hex or image logic handled cleaner
+        let previewStyle = '';
+        if (!c.preview_url && c.hex_value) {
+            previewStyle = `background-color: ${c.hex_value};`;
+        }
 
-        const content = c.preview_url
+        const imgContent = c.preview_url
             ? `<img src="${c.preview_url}" alt="${c.name}">`
             : '';
 
         return `
-        <div class="color-item ${state.selectedColor?.id === c.id ? 'selected' : ''}" data-id="${c.id}" title="${c.name}" style="${style}">
-            ${content}
+        <div class="color-card ${state.selectedColor?.id === c.id ? 'selected' : ''}" data-id="${c.id}" title="${c.name}">
+            <div class="color-preview-box" style="${previewStyle}">
+                ${imgContent}
+            </div>
+            <div class="color-name">${c.name}</div>
         </div>
     `}).join('');
 
-    document.querySelectorAll('.color-item').forEach(item => {
+    document.querySelectorAll('.color-card').forEach(item => {
         item.addEventListener('click', () => {
             const color = state.colors.find(c => c.id === item.dataset.id);
             selectColor(color);
@@ -231,6 +235,12 @@ function selectFabric(fabric) {
     renderFabrics(); // Re-render to update selected UI
     loadColors(fabric.id);
     updateGenerateButton();
+
+    // Auto-open Colors Accordion
+    const colorsSection = document.getElementById('colorsSection');
+    if (colorsSection && !colorsSection.classList.contains('open')) {
+        setTimeout(() => colorsSection.classList.add('open'), 300); // Small delay for UX
+    }
 }
 
 function selectColor(color) {

@@ -306,7 +306,8 @@ body {
 
 .fabric-card.selected {
     background: white;
-    box-shadow: 0 0 0 1px var(--text-primary);
+    border-color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .fabric-card .content-box {
@@ -336,39 +337,60 @@ body {
 }
 
 /* Colors */
+/* Colors */
 .grid-colors {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
-.color-item {
-    aspect-ratio: 1;
-    border-radius: 50%;
+/* Color Card - Stylistically identical to Fabric Card */
+.color-card {
+    border-radius: 12px;
+    padding: 6px;
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid transparent;
 }
 
-.color-item:hover {
-    transform: scale(1.15);
+.color-card:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.color-card:active {
+    transform: scale(0.96);
+}
+
+.color-card.selected {
+    background: white;
+    border-color: var(--text-primary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.color-item:active {
-    transform: scale(0.9);
+.color-preview-box {
+    height: 60px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    /* Added subtle background */
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
 }
 
-.color-item.selected {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text-primary);
-}
-
-.color-item img {
+.color-preview-box img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.color-name {
+    font-size: 0.75rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-weight: 400;
 }
 
 /* Footer */
