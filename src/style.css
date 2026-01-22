@@ -677,29 +677,88 @@ body {
 }
 
 /* Mobile */
+/* Mobile Optimization */
 @media (max-width: 800px) {
     .app-layout {
         flex-direction: column;
-        padding: 16px;
-        gap: 16px;
+        padding: 12px;
+        gap: 12px;
         height: auto;
+        min-height: 100vh;
         overflow-y: auto;
+        display: flex;
     }
 
-    .main-canvas {
-        height: 50vh;
-        order: 1;
-        min-height: 350px;
+    /* 1. Header on Top */
+    .sidebar-header {
+        order: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        margin-bottom: 0;
         position: sticky;
         top: 0;
+        z-index: 100;
+        border: 1px solid rgba(255, 255, 255, 0.5);
     }
 
-    .sidebar {
-        width: 100%;
-        min-width: 100%;
-        height: auto;
+    /* 2. Canvas Below Header */
+    .main-canvas {
+        order: 1;
+        height: 50vh;
+        min-height: 350px;
+        /* Sticky below header (approx 70px + gap) */
+        position: sticky;
+        top: 85px;
+        z-index: 90;
+    }
+
+    /* 3. Controls (Sidebar Scroll) Below Canvas */
+    .sidebar-scroll {
         order: 2;
+        width: 100%;
         overflow: visible;
-        padding-bottom: 40px;
+        padding: 0 4px;
+        /* Tiny padding */
+    }
+
+    /* 4. Footer at Bottom */
+    .sidebar-footer {
+        order: 3;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        border-radius: 16px 16px 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px;
+        z-index: 100;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Adjust Sidebar Container to allow reordering children */
+    .sidebar {
+        display: contents;
+        /* Allows children to participate in .app-layout flex container */
+        /* Note: display: contents removes the element box, so properties like width/bg on .sidebar won't apply */
+    }
+
+    /* Spacer for fixed footer */
+    .app-layout::after {
+        content: '';
+        display: block;
+        height: 100px;
+        /* Space for fixed footer */
+        order: 4;
+        width: 100%;
+    }
+
+    .logo-container {
+        padding-left: 8px;
     }
 }
