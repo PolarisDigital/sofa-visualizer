@@ -133,11 +133,12 @@ async function loadFabrics() {
         if (response.data) data = response.data;
     } catch (e) { console.error('Supabase error', e); }
 
-    // Merge or use defaults if empty
-    if (data.length === 0) {
-        state.fabrics = DEFAULT_FABRICS;
+    // If DB has data, use ONLY DB data. Otherwise fallback to defaults.
+    if (data.length > 0) {
+        state.fabrics = data;
     } else {
-        state.fabrics = [...data, ...DEFAULT_FABRICS.filter(df => !data.find(d => d.name === df.name))];
+        console.log('No fabrics in DB, using defaults');
+        state.fabrics = DEFAULT_FABRICS;
     }
 
     renderFabrics();
@@ -147,23 +148,25 @@ async function loadColors(fabricId) {
     els.colorsGrid.innerHTML = '<div class="skeleton-loader"></div>';
 
     let dbColors = [];
-    if (!fabricId.startsWith('f_')) { // checking if it's a real DB ID (uuid) or our static ID
-        try {
-            const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
-            if (data) dbColors = data;
-        } catch (e) { console.error(e); }
+
+    // Only try to fetch from DB if it looks like a UUID (not starting with f_)
+    // OR if we decide to fetch anyway (maybe we migrate defaults to DB later)
+    // Actually, checking if fabricId exists in DB is safer.
+
+    try {
+        const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
+        if (data && data.length > 0) {
+            dbColors = data;
+        }
+    } catch (e) { console.error(e); }
+
+    if (dbColors.length > 0) {
+        state.colors = dbColors;
+    } else {
+        // Fallback to static defaults if nothing in DB for this fabric
+        state.colors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
     }
 
-    // Get defaults based on fabric ID mapping or generic defaults
-    let defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-
-    // Special handling: if fabric is one of our static ones, lookup by ID
-    const fabricIsStatic = DEFAULT_FABRICS.find(f => f.id === fabricId);
-    if (fabricIsStatic) {
-        defaultColors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-    }
-
-    state.colors = [...dbColors, ...defaultColors];
     renderColors();
 }
 
