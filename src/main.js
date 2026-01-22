@@ -299,30 +299,9 @@ function loadCompanySettings() {
 // --- Interactions ---
 
 function resetApp() {
-    // Reset State
-    state.uploadedImageBase64 = null;
-    state.generatedImage = null;
-    state.selectedFabric = null;
-    state.selectedColor = null;
-
-    // Reset UI - Image
-    els.uploadThumb.src = '';
-    els.uploadThumb.style.display = 'none';
-    document.querySelector('.upload-placeholder').style.display = 'flex';
-    document.getElementById('imageInput').value = '';
-
-    // Reset UI - Main View
-    els.mainImage.src = '';
-    els.imageWrapper.classList.remove('has-image');
-    document.getElementById('previewPlaceholder').style.display = 'flex';
-
-    // Reset UI - Controls
-    els.resetBtn.style.display = 'none';
-    els.generateBtn.disabled = true;
-
-    // Close Accordions
-    document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
-    document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('open'));
+    if (confirm('Vuoi davvero cancellare tutto e ricominciare?')) {
+        window.location.reload();
+    }
 }
 
 // --- Image Handling ---
@@ -336,60 +315,70 @@ function setupEventListeners() {
         return true;
     };
 
-    // Upload - Auth check removed (was blocking logged-in users)
-    els.imageInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) handleImageUpload(file);
-    });
+    // Upload
+    if (els.imageInput) {
+        els.imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleImageUpload(file);
+        });
+    }
 
     // Reset Button
     if (els.resetBtn) els.resetBtn.addEventListener('click', resetApp);
 
     // Output Mode Toggle
-    els.toggleOptions.forEach(btn => {
-        btn.addEventListener('click', () => {
-            els.toggleOptions.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            state.outputMode = btn.dataset.mode;
+    if (els.toggleOptions) {
+        els.toggleOptions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                els.toggleOptions.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.outputMode = btn.dataset.mode;
+            });
         });
-    });
+    }
 
     // Generate
-    els.generateBtn.addEventListener('click', generateImage);
+    if (els.generateBtn) els.generateBtn.addEventListener('click', generateImage);
 
     // Lightbox
-    els.imageWrapper.addEventListener('click', () => {
-        if (els.mainImage.src) {
-            els.lightboxImg.src = els.mainImage.src;
-            els.lightbox.classList.add('active');
-        }
-    });
+    if (els.imageWrapper) {
+        els.imageWrapper.addEventListener('click', () => {
+            if (els.mainImage.src) {
+                els.lightboxImg.src = els.mainImage.src;
+                els.lightbox.classList.add('active');
+            }
+        });
+    }
 
-    els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
+    if (els.closeLightbox) els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
 
     // Download / Share
-    els.downloadBtn.addEventListener('click', () => {
-        if (els.mainImage.src) {
-            const link = document.createElement('a');
-            link.href = els.mainImage.src;
-            link.download = `fabricai-${Date.now()}.jpg`;
-            link.click();
-        }
-    });
+    if (els.downloadBtn) {
+        els.downloadBtn.addEventListener('click', () => {
+            if (els.mainImage.src) {
+                const link = document.createElement('a');
+                link.href = els.mainImage.src;
+                link.download = `fabricai-${Date.now()}.jpg`;
+                link.click();
+            }
+        });
+    }
 
-    els.shareBtn.addEventListener('click', async () => {
-        if (navigator.share && els.mainImage.src) {
-            const blob = await (await fetch(els.mainImage.src)).blob();
-            const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
-            navigator.share({
-                title: 'Il mio nuovo divano',
-                text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
-                files: [file]
-            });
-        } else {
-            alert('Condivisione non supportata su questo dispositivo');
-        }
-    });
+    if (els.shareBtn) {
+        els.shareBtn.addEventListener('click', async () => {
+            if (navigator.share && els.mainImage.src) {
+                const blob = await (await fetch(els.mainImage.src)).blob();
+                const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
+                navigator.share({
+                    title: 'Il mio nuovo divano',
+                    text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
+                    files: [file]
+                });
+            } else {
+                alert('Condivisione non supportata su questo dispositivo');
+            }
+        });
+    }
 }
 
 async function handleImageUpload(file) {
@@ -407,7 +396,7 @@ async function handleImageUpload(file) {
             const convertedBlob = await heic2any({
                 blob: file,
                 toType: 'image/jpeg',
-                quality: 0.9
+                quality: 0.95
             });
 
             processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), {
@@ -437,7 +426,6 @@ async function handleImageUpload(file) {
             return;
         }
     }
-
     const reader = new FileReader();
     reader.onload = (e) => {
         // Create an Image object to process through canvas
@@ -445,7 +433,8 @@ async function handleImageUpload(file) {
         img.onload = () => {
             try {
                 // Resize if too large
-                const MAX_SIZE = 1200;
+                // Increased to 2500px for 8K quality inputs
+                const MAX_SIZE = 2500;
                 let width = img.width;
                 let height = img.height;
 
@@ -466,7 +455,8 @@ async function handleImageUpload(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                // Increased quality to 0.98 for maximum fidelity
+                const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.98);
 
                 // Store processed image
                 state.uploadedImage = jpegDataUrl;
