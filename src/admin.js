@@ -212,58 +212,65 @@ window.editFabric = (id) => {
 document.getElementById('newFabricForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const id = document.getElementById('fabricId').value;
-    const name = document.getElementById('fabricName').value;
-    const description = document.getElementById('fabricDesc').value;
-    const prompt = document.getElementById('fabricPrompt').value;
-    const file = document.getElementById('fabricPreview').files[0];
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    btn.innerText = 'Salvataggio in corso...';
+    btn.disabled = true;
 
-    // Identify if Creating or Updating
-    const isUpdate = !!id;
+    try {
+        const id = document.getElementById('fabricId').value;
+        const name = document.getElementById('fabricName').value;
+        const description = document.getElementById('fabricDesc').value;
+        const prompt = document.getElementById('fabricPrompt').value;
+        const file = document.getElementById('fabricPreview').files[0];
 
-    let previewUrl = isUpdate ? (allFabrics.find(f => f.id === id)?.preview_url) : null;
+        // Identify if Creating or Updating
+        const isUpdate = !!id;
 
-    if (file) {
-        const fileName = `fabric_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-        const { error: uploadError } = await supabase.storage
-            .from('textures')
-            .upload(fileName, file);
+        let previewUrl = isUpdate ? (allFabrics.find(f => f.id === id)?.preview_url) : null;
 
-        if (uploadError) {
-            alert('Errore upload: ' + uploadError.message);
-            return;
+        if (file) {
+            const fileName = `fabric_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            const { error: uploadError } = await supabase.storage
+                .from('textures')
+                .upload(fileName, file);
+
+            if (uploadError) throw new Error('Errore upload: ' + uploadError.message);
+
+            const { data } = supabase.storage.from('textures').getPublicUrl(fileName);
+            previewUrl = data.publicUrl;
         }
 
-        const { data } = supabase.storage.from('textures').getPublicUrl(fileName);
-        previewUrl = data.publicUrl;
-    }
+        const payload = {
+            name,
+            description,
+            preview_url: previewUrl,
+            texture_prompt: prompt
+        };
 
-    let error;
+        let error;
+        if (isUpdate) {
+            const { error: dbError } = await supabase.from('fabrics').update(payload).eq('id', id);
+            error = dbError;
+        } else {
+            const { error: dbError } = await supabase.from('fabrics').insert(payload);
+            error = dbError;
+        }
 
-    const payload = {
-        name,
-        description,
-        preview_url: previewUrl,
-        texture_prompt: prompt
-    };
+        if (error) throw error;
 
-    if (isUpdate) {
-        const { error: dbError } = await supabase.from('fabrics').update(payload).eq('id', id);
-        error = dbError;
-    } else {
-        const { error: dbError } = await supabase.from('fabrics').insert(payload);
-        error = dbError;
-    }
-
-    if (error) alert('Errore salvataggio: ' + error.message);
-    else {
+        // Success
         hideFabricForm();
-        loadFabrics(); // Reload list
+        await loadFabrics(); // Wait for reload
 
-        // If we updated the currently selected fabric, refresh colors or header?
         if (isUpdate && id === selectedFabricId) {
             document.getElementById('selectedFabricTitle').innerText = `Colori: ${name}`;
         }
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
 });
 
@@ -286,46 +293,56 @@ document.getElementById('newColorForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     if (!selectedFabricId) return;
 
-    const name = document.getElementById('colorName').value;
-    const hex = document.getElementById('colorHex').value;
-    const file = document.getElementById('colorTexture').files[0];
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    btn.innerText = 'Caricamento in corso...';
+    btn.disabled = true;
 
-    if (!file) {
-        alert('Seleziona una foto del tessuto');
-        return;
-    }
+    try {
+        const name = document.getElementById('colorName').value;
+        const hex = document.getElementById('colorHex').value;
+        const file = document.getElementById('colorTexture').files[0];
 
-    // Upload image
-    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('textures')
-        .upload(fileName, file);
+        if (!file) {
+            alert('Seleziona una foto del tessuto');
+            return;
+        }
 
-    if (uploadError) {
-        alert('Errore upload immagine: ' + uploadError.message);
-        return;
-    }
+        // Upload image
+        const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('textures')
+            .upload(fileName, file);
 
-    // Get Public URL
-    const { data: { publicUrl } } = supabase.storage
-        .from('textures')
-        .getPublicUrl(fileName);
+        if (uploadError) throw new Error('Errore upload: ' + uploadError.message);
 
-    // Save to DB
-    const { error: dbError } = await supabase.from('colors').insert({
-        fabric_id: selectedFabricId,
-        name,
-        hex_value: hex,
-        preview_url: publicUrl
-    });
+        // Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('textures')
+            .getPublicUrl(fileName);
 
-    if (dbError) alert('Errore salvataggio: ' + dbError.message);
-    else {
+        // Save to DB
+        const { error: dbError } = await supabase.from('colors').insert({
+            fabric_id: selectedFabricId,
+            name,
+            hex_value: hex,
+            preview_url: publicUrl
+        });
+
+        if (dbError) throw new Error('Errore salvataggio: ' + dbError.message);
+
+        // Success
         hideAddColorForm();
-        loadColors(selectedFabricId);
+        await loadColors(selectedFabricId);
         document.getElementById('newColorForm').reset();
         document.getElementById('texturePreview').style.display = 'none';
         document.getElementById('uploadPlaceholder').style.display = 'block';
+
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
 });
 

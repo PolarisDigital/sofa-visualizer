@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         fabricsGrid: document.getElementById('fabricsGrid'),
         colorsGrid: document.getElementById('colorsGrid'),
         generateBtn: document.getElementById('generateBtn'),
+        resetBtn: document.getElementById('resetBtn'), // Reset Button
         toggleOptions: document.querySelectorAll('.toggle-option'),
         imageWrapper: document.getElementById('imageWrapper'),
         canvasViewer: document.getElementById('canvasViewer'),
@@ -295,6 +296,35 @@ function loadCompanySettings() {
     }
 }
 
+// --- Interactions ---
+
+function resetApp() {
+    // Reset State
+    state.uploadedImageBase64 = null;
+    state.generatedImage = null;
+    state.selectedFabric = null;
+    state.selectedColor = null;
+
+    // Reset UI - Image
+    els.uploadThumb.src = '';
+    els.uploadThumb.style.display = 'none';
+    document.querySelector('.upload-placeholder').style.display = 'flex';
+    document.getElementById('imageInput').value = '';
+
+    // Reset UI - Main View
+    els.mainImage.src = '';
+    els.imageWrapper.classList.remove('has-image');
+    document.getElementById('previewPlaceholder').style.display = 'flex';
+
+    // Reset UI - Controls
+    els.resetBtn.style.display = 'none';
+    els.generateBtn.disabled = true;
+
+    // Close Accordions
+    document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
+    document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('open'));
+}
+
 // --- Image Handling ---
 function setupEventListeners() {
     // Check Auth before actions
@@ -311,6 +341,9 @@ function setupEventListeners() {
         const file = e.target.files[0];
         if (file) handleImageUpload(file);
     });
+
+    // Reset Button
+    if (els.resetBtn) els.resetBtn.addEventListener('click', resetApp);
 
     // Output Mode Toggle
     els.toggleOptions.forEach(btn => {
@@ -465,6 +498,11 @@ async function handleImageUpload(file) {
                     imgWrapper.style.display = 'block';
                     els.imageWrapper = imgWrapper;
                 }
+
+                // Show Reset Button
+                if (els.resetBtn) els.resetBtn.style.display = 'block';
+
+                updateGenerateButton();
                 if (emptyState) {
                     emptyState.style.display = 'none';
                 }

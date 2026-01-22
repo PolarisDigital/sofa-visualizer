@@ -84,10 +84,15 @@
       </div>
 
       <footer class="sidebar-footer">
-        <button id="generateBtn" class="btn-generate" disabled>
-          <span class="btn-text">Genera Anteprima</span>
-          <span class="loading-spinner" style="display: none;"></span>
-        </button>
+        <div class="footer-actions" style="display: flex; gap: 8px;">
+          <button id="resetBtn" class="btn-secondary" style="flex: 1; display: none;" title="Ricomincia da capo">
+            ↺ Reset
+          </button>
+          <button id="generateBtn" class="btn-generate" disabled style="flex: 2;">
+            <span class="btn-text">Genera</span>
+            <span class="loading-spinner" style="display: none;"></span>
+          </button>
+        </div>
         <div class="credits">
           Powered by <a href="https://polarisdigital.it" target="_blank">Polaris AI | Digital Solution</a>
         </div>
