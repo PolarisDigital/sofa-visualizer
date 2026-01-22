@@ -51,44 +51,47 @@ app.post('/api/gemini/edit', async (req, res) => {
 
         if (outputMode === 'scontornato') {
             // Isolated sofa on neutral background
-            editPrompt = `You are an expert photo editor and product photographer.
+            editPrompt = `You are an expert product photographer specializing in e-commerce visualization.
 
 I have an image of a sofa/couch. I need you to:
-1. ISOLATE the sofa from the background (remove the background completely)
-2. Place the sofa on a clean, neutral LIGHT GRAY studio background (#E5E5E5 or similar)
-3. Change the sofa upholstery: ${prompt}
+1. ISOLATE the sofa (remove background).
+2. PLACE it on a clean, professional Studio White/Gray background.
+3. RETIXTURE the sofa with: ${prompt}
 
-CRITICAL REQUIREMENTS:
-- Remove ALL background elements - room, walls, floor, other furniture
-- Place sofa on a clean, seamless light gray gradient studio background
-- Keep the EXACT same sofa shape, design and proportions
-- Change only the fabric texture and color as specified
-- Add soft, professional studio lighting
-- Add subtle soft shadow under the sofa for realism
-- OUTPUT MUST BE HIGH RESOLUTION and photorealistic quality
-- The result should look like a professional product photo for e-commerce
+CRITICAL EXECUTION GUIDELINES:
+- **EXTREME DETAIL**: The fabric texture must be sharp and visible (macro weave, grain).
+- **REALISM**: Add realistic self-shadowing and ambient occlusion in the folds.
+- **LIGHTING**: Soft, professional studio lighting from the top-left.
+- **SHADOW**: Add a realistic drop shadow under the sofa on the floor.
+- **QUALITY**: 8K, Raw Photo, Sharp Focus. No artifacts.
 
-Generate the edited image at the highest possible quality.`;
+Generate the final image as a high-end catalogue photo.`;
         } else {
             // Keep original background (ambientato)
-            editPrompt = `You are an expert interior designer and professional photo editor.
+            editPrompt = `You are an expert interior designer and professional photo editor specializing in ultra-realistic product visualization.
 
 I have an image of a sofa/couch. EDIT this image to change ONLY the upholstery/fabric of the sofa.
 
-${prompt}
+TARGET FABRIC: ${prompt}
 
-CRITICAL REQUIREMENTS:
-- Keep the EXACT same sofa shape, design and dimensions
-- Keep the EXACT same room/background and camera angle
-- Keep all other furniture and objects unchanged
-- Only change the fabric texture and color of the sofa
-- OUTPUT MUST BE HIGH RESOLUTION and photorealistic quality
-- Maintain proper lighting, shadows and reflections on the new fabric
-- The fabric should have realistic texture detail
-- Match the lighting conditions of the original photo
-- Keep all fine details sharp and clear
+CRITICAL EXECUTION GUIDELINES:
+1. **ULTRA-REALISTIC TEXTURE**: The fabric must look mathematically precise and physically accurate.
+   - Visible weave structure and grain (macro details).
+   - Realistic minor imperfections, wrinkles, and folds where the fabric wraps.
+   - Correct light interaction (specularity, roughness, sheen) for the specific material (e.g., velvet absorbs light, leather reflects it).
 
-Generate the edited image at the highest possible quality.`;
+2. **PHOTOGRAPHY STANDARDS**:
+   - 8K UHD Resolution quality.
+   - Sharp focus on the sofa texture.
+   - Raw photo style (no cartoon/render effect).
+   - Perfect color grading matching the original scene.
+
+3. **SCENE INTEGRATION**:
+   - Keep the EXACT same room/background and camera angle.
+   - Keep all other furniture and objects unchanged.
+   - Maintain proper lighting, cast shadows, and ambient occlusion.
+
+Generate the result as if shot with a high-end Hasselblad camera.`;
         }
 
         const result = await model.generateContent([
