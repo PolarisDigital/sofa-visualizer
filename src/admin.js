@@ -155,7 +155,8 @@ document.getElementById('newFabricForm').addEventListener('submit', async (e) =>
     const { error } = await supabase.from('fabrics').insert({
         name,
         description,
-        preview_url: previewUrl
+        preview_url: previewUrl,
+        texture_prompt: document.getElementById('fabricPrompt').value // Save fabric-level prompt
     });
 
     if (error) alert('Errore creazione tessuto: ' + error.message);
@@ -213,14 +214,11 @@ document.getElementById('newColorForm').addEventListener('submit', async (e) => 
         .getPublicUrl(fileName);
 
     // Save to DB
-    const texturePrompt = document.getElementById('colorPrompt').value;
-
     const { error: dbError } = await supabase.from('colors').insert({
         fabric_id: selectedFabricId,
         name,
         hex_value: hex,
-        preview_url: publicUrl,
-        texture_prompt: texturePrompt || null // Save custom prompt if exists
+        preview_url: publicUrl
     });
 
     if (dbError) alert('Errore salvataggio: ' + dbError.message);

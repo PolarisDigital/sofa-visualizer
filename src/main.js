@@ -494,9 +494,9 @@ async function generateImage() {
         // Combine fabric name + color name + optional texture prompt
         let promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}`;
 
-        // Append custom AI prompt if exists in DB
-        if (state.selectedColor.texture_prompt) {
-            promptText += `. ${state.selectedColor.texture_prompt}`;
+        // Append custom AI prompt if exists in FABRIC definition
+        if (state.selectedFabric.texture_prompt) {
+            promptText += `. ${state.selectedFabric.texture_prompt}`;
         }
 
         console.log('Starting generation with:', {

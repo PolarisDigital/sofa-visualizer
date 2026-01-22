@@ -265,7 +265,17 @@
                             </div>
                             <div class="form-group">
                                 <label>Descrizione</label>
-                                <textarea id="fabricDesc" rows="3"></textarea>
+                                <textarea id="fabricDesc" rows="2"
+                                    placeholder="Descrizione visibile all'utente"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Descrizione per IA (Prompt specifico)</label>
+                                <textarea id="fabricPrompt" rows="2"
+                                    placeholder="Es. Soft velvet fabric with crushed texture and sheen..."></textarea>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+                                    Definisci qui il materiale. Il colore verrà aggiunto automaticamente.
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -317,15 +327,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>Descrizione per IA (Prompt specifico)</label>
-                                <textarea id="colorPrompt" rows="2"
-                                    placeholder="Es. Dark red crushed velvet fabric with high sheen and soft shadows..."></textarea>
-                                <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
-                                    Lascia vuoto per usare il default: "Nome Colore + Nome Tessuto". Usa l'inglese per
-                                    risultati migliori.
-                                </div>
-                            </div>
+
 
                             <div class="form-group">
                                 <label>Texture Immagine (Foto reale del tessuto)</label>
