@@ -492,7 +492,12 @@ async function generateImage() {
     try {
         // Construct intelligent prompt using DB Data
         // Combine fabric name + color name + optional texture prompt
-        const promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}. ${state.selectedColor.texture_prompt || ''}`;
+        let promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}`;
+
+        // Append custom AI prompt if exists in DB
+        if (state.selectedColor.texture_prompt) {
+            promptText += `. ${state.selectedColor.texture_prompt}`;
+        }
 
         console.log('Starting generation with:', {
             prompt: promptText,

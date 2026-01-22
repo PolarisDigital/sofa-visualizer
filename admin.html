@@ -115,6 +115,89 @@
             font-size: 0.9rem;
         }
 
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: black;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e4e4e7;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #d4d4d8;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .mt-4 {
+            margin-top: 16px;
+        }
+
+        .ml-2 {
+            margin-left: 8px;
+        }
+
+        .mb-6 {
+            margin-bottom: 24px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .grid {
+            display: grid;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .gap-4 {
+            gap: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .p-4 {
+            padding: 16px;
+        }
+
         /* Preview Upload */
         .upload-preview {
             width: 100%;
@@ -198,12 +281,22 @@
                         <form id="newColorForm">
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
-                                    <label>Nome Colore</label>
+                                    <label>Nome Colore (Visibile all'utente)</label>
                                     <input type="text" id="colorName" required placeholder="Es. Rosso Rubino">
                                 </div>
                                 <div class="form-group">
-                                    <label>Codice Hex (Fallback)</label>
+                                    <label>Codice Hex (Anteprima)</label>
                                     <input type="color" id="colorHex" value="#000000" style="height: 48px;">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Descrizione per IA (Prompt specifico)</label>
+                                <textarea id="colorPrompt" rows="2"
+                                    placeholder="Es. Dark red crushed velvet fabric with high sheen and soft shadows..."></textarea>
+                                <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+                                    Lascia vuoto per usare il default: "Nome Colore + Nome Tessuto". Usa l'inglese per
+                                    risultati migliori.
                                 </div>
                             </div>
 
