@@ -264,13 +264,24 @@ document.getElementById('newFabricForm').addEventListener('submit', async (e) =>
         let error;
         if (isUpdate) {
             const { error: dbError } = await supabase.from('fabrics').update(payload).eq('id', id);
-            error = dbError;
+            if (dbError) throw dbError;
         } else {
-            const { error: dbError } = await supabase.from('fabrics').insert(payload);
-            error = dbError;
-        }
+            const { data: newFabric, error: dbError } = await supabase.from('fabrics').insert(payload).select();
+            if (dbError) throw dbError;
 
-        if (error) throw error;
+            // Auto-create default colors for new fabric
+            if (newFabric && newFabric[0]) {
+                const fabricId = newFabric[0].id;
+                const defaultColors = [
+                    { fabric_id: fabricId, name: 'Grigio Chiaro', hex_value: '#D3D3D3' },
+                    { fabric_id: fabricId, name: 'Antracite', hex_value: '#333333' },
+                    { fabric_id: fabricId, name: 'Beige', hex_value: '#F5F5DC' },
+                    { fabric_id: fabricId, name: 'Blu Navy', hex_value: '#000080' },
+                    { fabric_id: fabricId, name: 'Bianco', hex_value: '#FFFFFF' }
+                ];
+                await supabase.from('colors').insert(defaultColors);
+            }
+        }
 
         // Success
         hideFabricForm();
@@ -306,20 +317,22 @@ document.getElementById('newColorForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     if (!selectedFabricId) return;
 
+    const name = document.getElementById('colorName').value;
+    const hex = document.getElementById('colorHex').value;
+    const file = document.getElementById('colorTexture').files[0];
+
+    // Validation before disabling button
+    if (!file) {
+        alert('Seleziona una foto del tessuto');
+        return;
+    }
+
     const btn = e.target.querySelector('button[type="submit"]');
     const originalText = btn.innerText;
     btn.innerText = 'Caricamento in corso...';
     btn.disabled = true;
 
     try {
-        const name = document.getElementById('colorName').value;
-        const hex = document.getElementById('colorHex').value;
-        const file = document.getElementById('colorTexture').files[0];
-
-        if (!file) {
-            alert('Seleziona una foto del tessuto');
-            return;
-        }
 
         // Upload image
         const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
