@@ -19,9 +19,9 @@ app.get('/', (req, res) => {
     res.json({ status: 'ok', message: 'Sofa Visualizer API' });
 });
 
-// Gemini image editing endpoint
+// Gemini image editing endpoint - V2: Dual Image (Sofa + Fabric Texture)
 app.post('/api/gemini/edit', async (req, res) => {
-    const { imageBase64, prompt, apiKey, outputMode } = req.body;
+    const { sofaImageBase64, fabricImageBase64, apiKey, outputMode } = req.body;
 
     // Use provided API key or environment variable
     const googleApiKey = apiKey || process.env.GOOGLE_API_KEY;
@@ -33,14 +33,21 @@ app.post('/api/gemini/edit', async (req, res) => {
         });
     }
 
+    if (!sofaImageBase64 || !fabricImageBase64) {
+        return res.status(400).json({
+            success: false,
+            error: 'Both sofa image and fabric texture image are required.'
+        });
+    }
+
     try {
-        console.log('Processing image with Gemini... Mode:', outputMode || 'ambientato');
+        console.log('Processing dual images with Gemini 3 Pro... Mode:', outputMode || 'ambientato');
 
         const genAI = new GoogleGenerativeAI(googleApiKey);
 
-        // Use Gemini 3 Pro Image Preview - Best quality for image generation
+        // Use Gemini 2.0 Flash Exp - Stable model that supports multi-image input
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-pro-image-preview",
+            model: "gemini-2.0-flash-exp",
             generationConfig: {
                 responseModalities: ["image", "text"],
             }
@@ -50,55 +57,62 @@ app.post('/api/gemini/edit', async (req, res) => {
         let editPrompt;
 
         if (outputMode === 'scontornato') {
-            // Isolated sofa on neutral background
-            editPrompt = `You are an expert product photographer specializing in e-commerce visualization.
+            // Isolated sofa on neutral background with custom texture
+            editPrompt = `You are an expert product photographer and digital compositor.
 
-I have an image of a sofa/couch. I need you to:
-1. ISOLATE the sofa (remove background).
-2. PLACE it on a clean, professional Studio White/Gray background.
-3. RETIXTURE the sofa with: ${prompt}
+I am providing you TWO images:
+1. **IMAGE 1 (First image)**: A photograph of a SOFA/COUCH - this is the subject
+2. **IMAGE 2 (Second image)**: A fabric/textile TEXTURE sample - this is the material to apply
 
-CRITICAL EXECUTION GUIDELINES:
-- **EXTREME DETAIL**: The fabric texture must be sharp and visible (macro weave, grain).
-- **REALISM**: Add realistic self-shadowing and ambient occlusion in the folds.
-- **LIGHTING**: Soft, professional studio lighting from the top-left.
-- **SHADOW**: Add a realistic drop shadow under the sofa on the floor.
-- **QUALITY**: 8K, Raw Photo, Sharp Focus. No artifacts.
+YOUR TASK:
+1. EXTRACT the sofa from IMAGE 1 (remove all background)
+2. APPLY the fabric texture from IMAGE 2 onto the sofa upholstery
+3. PLACE the result on a clean, professional studio white/gray gradient background
 
-Generate the final image as a high-end catalogue photo.`;
+CRITICAL REQUIREMENTS:
+- The fabric texture must wrap realistically around the sofa's 3D form
+- Match the lighting direction from the original sofa photo
+- Preserve all cushion shapes, folds, and contours
+- Add realistic self-shadowing in the creases and folds
+- Include a soft drop shadow under the sofa
+- Output quality: 8K, photorealistic, sharp focus, professional catalogue style
+
+Generate the final image.`;
         } else {
-            // Keep original background (ambientato)
-            editPrompt = `You are an expert interior designer and professional photo editor specializing in ultra-realistic product visualization.
+            // Keep original background (ambientato) with custom texture
+            editPrompt = `You are an expert interior designer and digital compositor specializing in photorealistic visualization.
 
-I have an image of a sofa/couch. EDIT this image to change ONLY the upholstery/fabric of the sofa.
+I am providing you TWO images:
+1. **IMAGE 1 (First image)**: A photograph of a SOFA/COUCH in a room setting - this is the subject
+2. **IMAGE 2 (Second image)**: A fabric/textile TEXTURE sample - this is the material to apply
 
-TARGET FABRIC: ${prompt}
+YOUR TASK:
+- REPLACE the current upholstery of the sofa in IMAGE 1 with the fabric texture from IMAGE 2
+- Keep EVERYTHING else in the scene EXACTLY the same (room, walls, floor, other furniture, lighting)
 
-CRITICAL EXECUTION GUIDELINES:
-1. **ULTRA-REALISTIC TEXTURE**: The fabric must look mathematically precise and physically accurate.
-   - Visible weave structure and grain (macro details).
-   - Realistic minor imperfections, wrinkles, and folds where the fabric wraps.
-   - Correct light interaction (specularity, roughness, sheen) for the specific material (e.g., velvet absorbs light, leather reflects it).
+CRITICAL REQUIREMENTS:
+- The fabric texture must wrap realistically following the sofa's 3D geometry
+- Preserve the original lighting, shadows, and ambient occlusion
+- Match the color temperature and exposure of the original scene
+- Maintain all creases, folds, and cushion shapes
+- The texture should show realistic material properties (weave, grain, sheen appropriate to the fabric type)
+- Output quality: 8K UHD, raw photo style, sharp focus, mathematically precise texture mapping
 
-2. **PHOTOGRAPHY STANDARDS**:
-   - 8K UHD Resolution quality.
-   - Sharp focus on the sofa texture.
-   - Raw photo style (no cartoon/render effect).
-   - Perfect color grading matching the original scene.
-
-3. **SCENE INTEGRATION**:
-   - Keep the EXACT same room/background and camera angle.
-   - Keep all other furniture and objects unchanged.
-   - Maintain proper lighting, cast shadows, and ambient occlusion.
-
-Generate the result as if shot with a high-end Hasselblad camera.`;
+Generate the edited image maintaining photorealistic quality.`;
         }
 
+        // Send BOTH images to Gemini
         const result = await model.generateContent([
             {
                 inlineData: {
                     mimeType: "image/jpeg",
-                    data: imageBase64
+                    data: sofaImageBase64
+                }
+            },
+            {
+                inlineData: {
+                    mimeType: "image/jpeg",
+                    data: fabricImageBase64
                 }
             },
             editPrompt
@@ -113,7 +127,7 @@ Generate the result as if shot with a high-end Hasselblad camera.`;
                     console.log('Image generated successfully');
                     res.json({
                         success: true,
-                        image: part.inlineData.data  // Return only base64, not full data URL
+                        image: part.inlineData.data
                     });
                     return;
                 }

@@ -1,57 +1,22 @@
-// FabricAI Pro - Main Application Logic
+// FabricAI Pro V2 - Main Application Logic
+// Dual Image Upload: Sofa + Fabric Texture
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { getSession, signOut } from './supabase.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- Constants ---
-const DEFAULT_FABRICS = [
-    { id: 'f_velvet', name: 'Velluto' },
-    { id: 'f_leather', name: 'Pelle' },
-    { id: 'f_linen', name: 'Lino' },
-    { id: 'f_boucle', name: 'Bouclé' },
-    { id: 'f_cotton', name: 'Cotone' }
-];
-
-const DEFAULT_COLORS = {
-    'f_velvet': [
-        { id: 'c_v_navy', name: 'Blu Navy', hex_value: '#1B365D' },
-        { id: 'c_v_emerald', name: 'Smeraldo', hex_value: '#50C878' },
-        { id: 'c_v_ruby', name: 'Rubino', hex_value: '#E0115F' },
-        { id: 'c_v_gold', name: 'Oro', hex_value: '#FFD700' }
-    ],
-    'f_leather': [
-        { id: 'c_l_brown', name: 'Marrone', hex_value: '#8B4513' },
-        { id: 'c_l_black', name: 'Nero', hex_value: '#000000' },
-        { id: 'c_l_tan', name: 'Cuoio', hex_value: '#D2B48C' }
-    ],
-    'f_linen': [
-        { id: 'c_li_beige', name: 'Beige', hex_value: '#F5F5DC' },
-        { id: 'c_li_grey', name: 'Grigio', hex_value: '#808080' },
-        { id: 'c_li_white', name: 'Bianco', hex_value: '#FFFFFF' }
-    ],
-    'default': [
-        { id: 'c_d_navy', name: 'Blu', hex_value: '#000080' },
-        { id: 'c_d_grey', name: 'Grigio', hex_value: '#808080' },
-        { id: 'c_d_beige', name: 'Beige', hex_value: '#F5F5DC' },
-        { id: 'c_d_black', name: 'Nero', hex_value: '#000000' }
-    ]
-};
-
-// --- State Management ---
+// --- State Management (V2: Dual Images) ---
 const state = {
-    uploadedImage: null,
-    uploadedImageBase64: null,
-    selectedFabric: null,
-    selectedColor: null,
+    sofaImage: null,         // Data URL for display
+    sofaImageBase64: null,   // Base64 for API
+    fabricImage: null,       // Data URL for display
+    fabricImageBase64: null, // Base64 for API
     outputMode: 'ambientato',
-    user: null,
-    fabrics: [],
-    colors: []
+    user: null
 };
 
-// --- DOM Elements (initialized after DOM ready) ---
+// --- DOM Elements ---
 let els = {};
 
 // --- ACCORDION TOGGLE (must be global for inline onclick) ---
@@ -65,27 +30,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize DOM elements AFTER page is loaded
     els = {
         userMenu: document.getElementById('userMenu'),
-        imageInput: document.getElementById('imageInput'),
-        uploadWidget: document.getElementById('uploadWidget'),
-        uploadThumb: document.getElementById('usersImageThumb'),
-        fabricsGrid: document.getElementById('fabricsGrid'),
-        colorsGrid: document.getElementById('colorsGrid'),
+        // V2: Dual Upload Widgets
+        sofaImageInput: document.getElementById('sofaImageInput'),
+        sofaImageThumb: document.getElementById('sofaImageThumb'),
+        uploadWidgetSofa: document.getElementById('uploadWidgetSofa'),
+        fabricImageInput: document.getElementById('fabricImageInput'),
+        fabricImageThumb: document.getElementById('fabricImageThumb'),
+        uploadWidgetFabric: document.getElementById('uploadWidgetFabric'),
+        // Controls
         generateBtn: document.getElementById('generateBtn'),
-        resetBtn: document.getElementById('resetBtn'), // Reset Button
+        resetBtn: document.getElementById('resetBtn'),
         toggleOptions: document.querySelectorAll('.toggle-option'),
+        // Canvas
         imageWrapper: document.getElementById('imageWrapper'),
         canvasViewer: document.getElementById('canvasViewer'),
         canvasLoading: document.getElementById('canvasLoading'),
         mainImage: document.getElementById('mainImage'),
         downloadBtn: document.getElementById('downloadBtn'),
         shareBtn: document.getElementById('shareBtn'),
+        // Lightbox
         lightbox: document.getElementById('lightbox'),
         lightboxImg: document.getElementById('lightboxImg'),
         closeLightbox: document.querySelector('.close-lightbox')
     };
 
     await initAuth();
-    await loadFabrics();
     loadCompanySettings();
     setupEventListeners();
 });
@@ -96,9 +65,7 @@ async function initAuth() {
     state.user = session?.user;
 
     if (state.user) {
-        // Get initial from email
         const initial = state.user.email.charAt(0).toUpperCase();
-        // Get username (part before @)
         const username = state.user.email.split('@')[0];
 
         // Admin Check
@@ -139,154 +106,20 @@ async function initAuth() {
     }
 }
 
-// --- Data Fetching ---
-// --- Data Fetching ---
-async function loadFabrics() {
-    let data = [];
-    try {
-        // Fetch only active fabrics
-        const response = await supabase.from('fabrics')
-            .select('*')
-            .eq('is_active', true) // Only active
-            .order('created_at');
-
-        if (response.data) data = response.data;
-    } catch (e) { console.error('Supabase error', e); }
-
-    // If DB has data, use ONLY DB data. Otherwise fallback to defaults.
-    if (data.length > 0) {
-        state.fabrics = data;
-    } else {
-        console.log('No fabrics in DB, using defaults');
-        state.fabrics = DEFAULT_FABRICS;
-    }
-
-    renderFabrics();
-}
-
-async function loadColors(fabricId) {
-    els.colorsGrid.innerHTML = '<div class="skeleton-loader"></div>';
-
-    let dbColors = [];
-
-    // Only try to fetch from DB if it looks like a UUID (not starting with f_)
-    // OR if we decide to fetch anyway (maybe we migrate defaults to DB later)
-    // Actually, checking if fabricId exists in DB is safer.
-
-    try {
-        const { data } = await supabase.from('colors').select('*').eq('fabric_id', fabricId);
-        if (data && data.length > 0) {
-            dbColors = data;
-        }
-    } catch (e) { console.error(e); }
-
-    if (dbColors.length > 0) {
-        state.colors = dbColors;
-    } else {
-        // Fallback to static defaults if nothing in DB for this fabric
-        state.colors = DEFAULT_COLORS[fabricId] || DEFAULT_COLORS['default'];
-    }
-
-    renderColors();
-}
-
-// --- Rendering ---
-// Rendering
-function renderFabrics() {
-    els.fabricsGrid.innerHTML = state.fabrics.map(f => {
-        // Fallback or Image for fabric
-        const content = f.preview_url
-            ? `<img src="${f.preview_url}" alt="${f.name}">`
-            : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #3f3f46;">🧵</div>`;
-
-        return `
-        <div class="fabric-card ${state.selectedFabric?.id === f.id ? 'selected' : ''}" data-id="${f.id}" title="${f.name}">
-            <div class="content-box">
-               ${content}
-            </div>
-            <div class="fabric-name">${f.name}</div>
-        </div>
-    `}).join('');
-
-    // Attach events
-    document.querySelectorAll('.fabric-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const fabric = state.fabrics.find(f => f.id === card.dataset.id);
-            selectFabric(fabric);
-        });
-    });
-}
-
-function renderColors() {
-    if (!state.colors.length) {
-        els.colorsGrid.innerHTML = '<div class="empty-hint">Nessun colore disponibile</div>';
-        return;
-    }
-
-    els.colorsGrid.innerHTML = state.colors.map(c => {
-        // Fallback hex or image logic handled cleaner
-        let previewStyle = '';
-        if (!c.preview_url && c.hex_value) {
-            previewStyle = `background-color: ${c.hex_value};`;
-        }
-
-        const imgContent = c.preview_url
-            ? `<img src="${c.preview_url}" alt="${c.name}">`
-            : '';
-
-        return `
-        <div class="color-card ${state.selectedColor?.id === c.id ? 'selected' : ''}" data-id="${c.id}" title="${c.name}">
-            <div class="color-preview-box" style="${previewStyle}">
-                ${imgContent}
-            </div>
-            <div class="color-name">${c.name}</div>
-        </div>
-    `}).join('');
-
-    document.querySelectorAll('.color-card').forEach(item => {
-        item.addEventListener('click', () => {
-            const color = state.colors.find(c => c.id === item.dataset.id);
-            selectColor(color);
-        });
-    });
-}
-
-// --- Interactions ---
-function selectFabric(fabric) {
-    state.selectedFabric = fabric;
-    state.selectedColor = null; // Reset color
-    renderFabrics(); // Re-render to update selected UI
-    loadColors(fabric.id);
-    updateGenerateButton();
-
-    // Auto-open Colors Accordion
-    const colorsSection = document.getElementById('colorsSection');
-    if (colorsSection && !colorsSection.classList.contains('open')) {
-        setTimeout(() => colorsSection.classList.add('open'), 300); // Small delay for UX
-    }
-}
-
-function selectColor(color) {
-    state.selectedColor = color;
-    renderColors();
-    updateGenerateButton();
-
-    // Auto-open Style Accordion
-    const styleSection = document.getElementById('styleSection');
-    if (styleSection && !styleSection.classList.contains('open')) {
-        setTimeout(() => styleSection.classList.add('open'), 300);
-    }
-}
-
+// --- V2: Update Generate Button ---
 function updateGenerateButton() {
-    const ready = state.uploadedImage && state.selectedFabric && state.selectedColor;
+    // V2: Ready when BOTH images are uploaded
+    const ready = state.sofaImageBase64 && state.fabricImageBase64;
     els.generateBtn.disabled = !ready;
-    if (ready) els.generateBtn.classList.add('pulse');
+    if (ready) {
+        els.generateBtn.classList.add('pulse');
+    } else {
+        els.generateBtn.classList.remove('pulse');
+    }
 }
 
 // --- Company Settings (Logo) ---
 function loadCompanySettings() {
-    // Check local storage for custom logo (simulating admin setting)
     const customLogo = localStorage.getItem('company_logo');
     if (customLogo) {
         const logoContainer = document.getElementById('logoContainer');
@@ -296,30 +129,28 @@ function loadCompanySettings() {
     }
 }
 
-// --- Interactions ---
-
+// --- Reset ---
 function resetApp() {
     if (confirm('Vuoi davvero cancellare tutto e ricominciare?')) {
         window.location.reload();
     }
 }
 
-// --- Image Handling ---
+// --- Event Listeners ---
 function setupEventListeners() {
-    // Check Auth before actions
-    const checkAuthAction = () => {
-        if (!state.user) {
-            window.location.href = '/login.html';
-            return false;
-        }
-        return true;
-    };
-
-    // Upload
-    if (els.imageInput) {
-        els.imageInput.addEventListener('change', (e) => {
+    // Sofa Image Upload
+    if (els.sofaImageInput) {
+        els.sofaImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) handleImageUpload(file);
+            if (file) handleImageUpload(file, 'sofa');
+        });
+    }
+
+    // Fabric Image Upload
+    if (els.fabricImageInput) {
+        els.fabricImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleImageUpload(file, 'fabric');
         });
     }
 
@@ -350,9 +181,11 @@ function setupEventListeners() {
         });
     }
 
-    if (els.closeLightbox) els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
+    if (els.closeLightbox) {
+        els.closeLightbox.addEventListener('click', () => els.lightbox.classList.remove('active'));
+    }
 
-    // Download / Share
+    // Download
     if (els.downloadBtn) {
         els.downloadBtn.addEventListener('click', () => {
             if (els.mainImage.src) {
@@ -364,6 +197,7 @@ function setupEventListeners() {
         });
     }
 
+    // Share
     if (els.shareBtn) {
         els.shareBtn.addEventListener('click', async () => {
             if (navigator.share && els.mainImage.src) {
@@ -371,7 +205,7 @@ function setupEventListeners() {
                 const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
                 navigator.share({
                     title: 'Il mio nuovo divano',
-                    text: `Guarda questo divano in ${state.selectedFabric.name} ${state.selectedColor.name}!`,
+                    text: 'Guarda questo divano con il nuovo tessuto!',
                     files: [file]
                 });
             } else {
@@ -381,8 +215,17 @@ function setupEventListeners() {
     }
 }
 
-async function handleImageUpload(file) {
+// --- V2: Image Upload Handler (supports both slots) ---
+async function handleImageUpload(file, imageType) {
     if (file.size > 20 * 1024 * 1024) return alert('File troppo grande (max 20MB)');
+
+    // Determine which widget we're working with
+    const issofa = imageType === 'sofa';
+    const widget = issofa ? els.uploadWidgetSofa : els.uploadWidgetFabric;
+    const thumbEl = issofa ? els.sofaImageThumb : els.fabricImageThumb;
+    const inputId = issofa ? 'sofaImageInput' : 'fabricImageInput';
+    const icon = issofa ? '🛋️' : '🧵';
+    const label = issofa ? 'Carica Foto Divano' : 'Carica Foto Tessuto';
 
     let processedFile = file;
 
@@ -390,7 +233,7 @@ async function handleImageUpload(file) {
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
         try {
             // Show loading state
-            els.uploadWidget.innerHTML = '<div style="padding: 20px; text-align: center;"><div class="spinner-large"></div><p style="margin-top: 10px; font-size: 0.8rem;">Conversione HEIC...</p></div>';
+            widget.innerHTML = '<div style="padding: 20px; text-align: center;"><div class="spinner-large"></div><p style="margin-top: 10px; font-size: 0.8rem;">Conversione HEIC...</p></div>';
 
             const heic2any = (await import('heic2any')).default;
             const convertedBlob = await heic2any({
@@ -404,36 +247,40 @@ async function handleImageUpload(file) {
             });
 
             // Restore upload widget
-            els.uploadWidget.innerHTML = `
-                <input type="file" id="imageInput" accept="image/*" hidden>
-                <div class="upload-placeholder" onclick="document.getElementById('imageInput').click()">
-                    <div class="icon-camera">📷</div>
-                    <span>Carica Foto</span>
+            widget.innerHTML = `
+                <input type="file" id="${inputId}" accept="image/*" hidden>
+                <div class="upload-placeholder" onclick="document.getElementById('${inputId}').click()">
+                    <div class="icon-camera">${icon}</div>
+                    <span>${label}</span>
                 </div>
-                <img id="usersImageThumb" class="upload-thumb" style="display: none;">
+                <img id="${issofa ? 'sofaImageThumb' : 'fabricImageThumb'}" class="upload-thumb" style="display: none;">
             `;
             // Re-attach event listener
-            document.getElementById('imageInput').addEventListener('change', (e) => {
+            document.getElementById(inputId).addEventListener('change', (e) => {
                 const newFile = e.target.files[0];
-                if (newFile) handleImageUpload(newFile);
+                if (newFile) handleImageUpload(newFile, imageType);
             });
             // Update els reference
-            els.uploadThumb = document.getElementById('usersImageThumb');
-            els.imageInput = document.getElementById('imageInput');
+            if (issofa) {
+                els.sofaImageThumb = document.getElementById('sofaImageThumb');
+                els.sofaImageInput = document.getElementById('sofaImageInput');
+            } else {
+                els.fabricImageThumb = document.getElementById('fabricImageThumb');
+                els.fabricImageInput = document.getElementById('fabricImageInput');
+            }
         } catch (err) {
             console.error('HEIC conversion error:', err);
             alert('Errore nella conversione HEIC. Prova a salvare l\'immagine come JPG prima di caricarla.');
             return;
         }
     }
+
     const reader = new FileReader();
     reader.onload = (e) => {
-        // Create an Image object to process through canvas
         const img = new Image();
         img.onload = () => {
             try {
-                // Resize if too large
-                // Increased to 2500px for 8K quality inputs
+                // Resize if too large (2500px max for high quality)
                 const MAX_SIZE = 2500;
                 let width = img.width;
                 let height = img.height;
@@ -455,49 +302,55 @@ async function handleImageUpload(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Increased quality to 0.98 for maximum fidelity
+                // High quality JPEG
                 const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.98);
+                const base64Data = jpegDataUrl.split(',')[1];
 
-                // Store processed image
-                state.uploadedImage = jpegDataUrl;
-                state.uploadedImageBase64 = jpegDataUrl.split(',')[1];
+                // Store in appropriate state slot
+                if (issofa) {
+                    state.sofaImage = jpegDataUrl;
+                    state.sofaImageBase64 = base64Data;
 
-                // Update Thumb in sidebar
-                if (els.uploadThumb) {
-                    els.uploadThumb.src = jpegDataUrl;
-                    els.uploadThumb.style.display = 'block';
-                }
-                if (els.uploadWidget) {
-                    els.uploadWidget.style.borderStyle = 'solid';
-                }
+                    // Update thumb
+                    const thumb = document.getElementById('sofaImageThumb');
+                    if (thumb) {
+                        thumb.src = jpegDataUrl;
+                        thumb.style.display = 'block';
+                    }
+                    if (widget) widget.style.borderStyle = 'solid';
 
-                // Show in main canvas - get fresh reference
-                const mainImg = document.getElementById('mainImage');
-                const imgWrapper = document.getElementById('imageWrapper');
-                const emptyState = document.querySelector('.empty-state');
+                    // Show sofa in main canvas
+                    const mainImg = document.getElementById('mainImage');
+                    const imgWrapper = document.getElementById('imageWrapper');
+                    const emptyState = document.querySelector('.empty-state');
 
-                if (mainImg) {
-                    console.log('Setting mainImg.src, dataUrl length:', jpegDataUrl.length);
-                    mainImg.src = jpegDataUrl;
-                    els.mainImage = mainImg; // Update reference
+                    if (mainImg) {
+                        mainImg.src = jpegDataUrl;
+                        els.mainImage = mainImg;
+                    }
+                    if (imgWrapper) {
+                        imgWrapper.style.display = 'block';
+                        els.imageWrapper = imgWrapper;
+                    }
+                    if (emptyState) emptyState.style.display = 'none';
                 } else {
-                    console.error('mainImg not found!');
-                }
-                if (imgWrapper) {
-                    console.log('Setting imgWrapper display to block');
-                    imgWrapper.style.display = 'block';
-                    els.imageWrapper = imgWrapper;
+                    state.fabricImage = jpegDataUrl;
+                    state.fabricImageBase64 = base64Data;
+
+                    // Update thumb
+                    const thumb = document.getElementById('fabricImageThumb');
+                    if (thumb) {
+                        thumb.src = jpegDataUrl;
+                        thumb.style.display = 'block';
+                    }
+                    if (widget) widget.style.borderStyle = 'solid';
                 }
 
-                // Show Reset Button
+                // Show Reset Button when any image is uploaded
                 if (els.resetBtn) els.resetBtn.style.display = 'block';
 
                 updateGenerateButton();
-                if (emptyState) {
-                    emptyState.style.display = 'none';
-                }
 
-                updateGenerateButton();
             } catch (err) {
                 console.error('Image processing error:', err);
                 alert('Errore nel processare l\'immagine');
@@ -514,27 +367,20 @@ async function handleImageUpload(file) {
     reader.readAsDataURL(processedFile);
 }
 
-// --- Generation Logic ---
+// --- V2: Generation Logic ---
 async function generateImage() {
-    if (!state.uploadedImage || !state.selectedColor) return;
+    if (!state.sofaImageBase64 || !state.fabricImageBase64) return;
 
     // UI Loading
     els.canvasLoading.style.display = 'flex';
     els.generateBtn.disabled = true;
+    els.generateBtn.querySelector('.btn-text').textContent = 'Generazione...';
 
     try {
-        // Construct intelligent prompt using DB Data
-        // Combine fabric name + color name + optional texture prompt
-        let promptText = `Change the sofa upholstery to ${state.selectedColor.name} ${state.selectedFabric.name}`;
-
-        // Append custom AI prompt if exists in FABRIC definition
-        if (state.selectedFabric.texture_prompt) {
-            promptText += `. ${state.selectedFabric.texture_prompt}`;
-        }
-
-        console.log('Starting generation with:', {
-            prompt: promptText,
-            imageLength: state.uploadedImageBase64?.length,
+        console.log('Starting V2 generation with:', {
+            sofaImageLength: state.sofaImageBase64?.length,
+            fabricImageLength: state.fabricImageBase64?.length,
+            outputMode: state.outputMode,
             userId: state.user?.id
         });
 
@@ -546,8 +392,8 @@ async function generateImage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                imageBase64: state.uploadedImageBase64,
-                prompt: promptText,
+                sofaImageBase64: state.sofaImageBase64,
+                fabricImageBase64: state.fabricImageBase64,
                 userId: state.user?.id || 'guest',
                 outputMode: state.outputMode
             }),
@@ -569,9 +415,15 @@ async function generateImage() {
 
     } catch (error) {
         console.error(error);
-        alert('Errore generazione: ' + error.message);
+        if (error.name === 'AbortError') {
+            alert('La generazione ha impiegato troppo tempo. Riprova.');
+        } else {
+            alert('Errore generazione: ' + error.message);
+        }
     } finally {
         els.canvasLoading.style.display = 'none';
         els.generateBtn.disabled = false;
+        els.generateBtn.querySelector('.btn-text').textContent = 'Genera';
+        updateGenerateButton();
     }
 }

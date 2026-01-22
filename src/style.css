@@ -762,3 +762,29 @@ body {
         padding-left: 8px;
     }
 }
+
+/* ============================================
+   V2: Dual Upload Styles
+   ============================================ */
+
+/* Section Title (numbered steps) */
+.section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Hint text below upload widget */
+.hint-text {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-align: center;
+    font-style: italic;
+}

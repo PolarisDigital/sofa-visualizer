@@ -28,48 +28,35 @@
       </header>
 
       <div class="sidebar-scroll">
-        <!-- Upload Section -->
+        <!-- Upload Sofa Section -->
         <section class="control-section">
-          <div class="upload-widget" id="uploadWidget">
-            <input type="file" id="imageInput" accept="image/*" hidden>
-            <div class="upload-placeholder" onclick="document.getElementById('imageInput').click()">
-              <div class="icon-camera">📷</div>
-              <span>Carica Foto</span>
+          <h3 class="section-title">1. Foto Divano</h3>
+          <div class="upload-widget" id="uploadWidgetSofa">
+            <input type="file" id="sofaImageInput" accept="image/*" hidden>
+            <div class="upload-placeholder" onclick="document.getElementById('sofaImageInput').click()">
+              <div class="icon-camera">🛋️</div>
+              <span>Carica Foto Divano</span>
             </div>
-            <img id="usersImageThumb" class="upload-thumb" style="display: none;">
+            <img id="sofaImageThumb" class="upload-thumb" style="display: none;">
           </div>
         </section>
 
-        <!-- Fabrics Section -->
-        <section class="control-section accordion-item" id="fabricsSection">
-          <div class="accordion-header" onclick="toggleAccordion('fabricsSection')">
-            <h3>Scegli Tessuto</h3>
-            <span class="chevron">▼</span>
-          </div>
-          <div class="accordion-content">
-            <div class="grid-fabrics" id="fabricsGrid">
-              <!-- Populated by JS -->
-              <div class="skeleton-loader"></div>
-              <div class="skeleton-loader"></div>
+        <!-- Upload Fabric Section -->
+        <section class="control-section">
+          <h3 class="section-title">2. Foto Tessuto</h3>
+          <div class="upload-widget" id="uploadWidgetFabric">
+            <input type="file" id="fabricImageInput" accept="image/*" hidden>
+            <div class="upload-placeholder" onclick="document.getElementById('fabricImageInput').click()">
+              <div class="icon-camera">🧵</div>
+              <span>Carica Foto Tessuto</span>
             </div>
+            <img id="fabricImageThumb" class="upload-thumb" style="display: none;">
           </div>
-        </section>
-
-        <!-- Colors Section -->
-        <section class="control-section accordion-item" id="colorsSection">
-          <div class="accordion-header" onclick="toggleAccordion('colorsSection')">
-            <h3>Scegli Colore</h3>
-            <span class="chevron">▼</span>
-          </div>
-          <div class="accordion-content">
-            <div class="grid-colors" id="colorsGrid">
-              <!-- Colors populate here -->
-            </div>
-          </div>
+          <p class="hint-text">Carica una foto del tessuto che vuoi applicare sul divano</p>
         </section>
 
         <!-- Style Section -->
-        <section class="control-section accordion-item" id="styleSection">
+        <section class="control-section accordion-item open" id="styleSection">
           <div class="accordion-header" onclick="toggleAccordion('styleSection')">
             <h3>Scegli Stile</h3>
             <span class="chevron">▼</span>
@@ -112,8 +99,8 @@
       <div class="canvas-viewer" id="canvasViewer">
         <div class="empty-state">
           <div class="empty-icon">🛋️</div>
-          <h2>Pronto a trasformare il tuo divano?</h2>
-          <p>Carica una foto e seleziona un tessuto per iniziare.</p>
+          <h2>Pronto a visualizzare il tuo divano?</h2>
+          <p>Carica una foto del divano e una foto del tessuto per iniziare.</p>
         </div>
 
         <div class="canvas-image-wrapper" id="imageWrapper" style="display: none;">
