@@ -250,50 +250,11 @@
                         <div class="text-center p-4">Caricamento...</div>
                     </div>
 
-                    <button class="btn btn-secondary w-full mt-4" onclick="showAddFabricForm()">
+                    <button class="btn btn-secondary w-full mt-4" onclick="openFabricModal()">
                         + Nuovo Tessuto
                     </button>
 
-                    <!-- Add Fabric Form (Hidden by default) -->
-                    <div id="addFabricForm"
-                        style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light);">
-                        <h3>Nuovo Tessuto</h3>
-                        <form id="newFabricForm">
-                            <div class="form-group">
-                                <label>Nome Tessuto</label>
-                                <input type="text" id="fabricName" required placeholder="Es. Velluto">
-                            </div>
-                            <div class="form-group">
-                                <label>Descrizione</label>
-                                <textarea id="fabricDesc" rows="2"
-                                    placeholder="Descrizione visibile all'utente"></textarea>
-                            </div>
 
-                            <div class="form-group">
-                                <label>Descrizione per IA (Prompt specifico)</label>
-                                <textarea id="fabricPrompt" rows="2"
-                                    placeholder="Es. Soft velvet fabric with crushed texture and sheen..."></textarea>
-                                <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
-                                    Definisci qui il materiale. Il colore verrà aggiunto automaticamente.
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Anteprima Tessuto (Opzionale)</label>
-                                <input type="file" id="fabricPreview" accept="image/*" hidden
-                                    onchange="previewFabric(this)">
-                                <div class="upload-preview" style="height: 100px;"
-                                    onclick="document.getElementById('fabricPreview').click()">
-                                    <span id="fabricUploadPlaceholder" style="font-size: 0.8rem;">Carica immagine</span>
-                                    <img id="fabricPreviewImg" style="display: none;">
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary w-full mt-4">Salva Tessuto</button>
-                            <button type="button" class="btn btn-secondary w-full mt-2"
-                                onclick="hideAddFabricForm()">Annulla</button>
-                        </form>
-                    </div>
                 </div>
             </div>
 
@@ -357,6 +318,113 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL: Fabric Form (Add/Edit) -->
+    <div id="fabricFormModal" class="light-modal-overlay" style="display: none;">
+        <div class="light-modal-card">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="fabricFormTitle" style="margin:0; font-size:1.4rem;">Nuovo Tessuto</h3>
+                <button type="button" class="close-btn" onclick="hideFabricForm()">×</button>
+            </div>
+
+            <form id="newFabricForm">
+                <input type="hidden" id="fabricId"> <!-- Hidden ID for Editing -->
+
+                <div class="form-group">
+                    <label>Nome Tessuto</label>
+                    <input type="text" id="fabricName" required placeholder="Es. Velluto">
+                </div>
+
+                <div class="form-group">
+                    <label>Descrizione (Visibile all'utente)</label>
+                    <textarea id="fabricDesc" rows="2" placeholder="Tessuto morbido..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Descrizione per IA (Prompt specifico)</label>
+                    <textarea id="fabricPrompt" rows="2"
+                        placeholder="Es. Soft velvet fabric with crushed texture and sheen..."></textarea>
+                    <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+                        Definisci qui il materiale. Il colore verrà aggiunto automaticamente.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Anteprima Tessuto (Opzionale)</label>
+                    <input type="file" id="fabricPreview" accept="image/*" hidden onchange="previewFabric(this)">
+                    <div class="upload-preview" style="height: 100px;"
+                        onclick="document.getElementById('fabricPreview').click()">
+                        <span id="fabricUploadPlaceholder" style="font-size: 0.8rem;">Carica immagine</span>
+                        <img id="fabricPreviewImg" style="display: none;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mt-4">Salva Tessuto</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        /* Modal Styles */
+        .light-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.2s forwards;
+        }
+
+        .light-modal-card {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            animation: slideUp 0.3s forwards;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .edit-btn {
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .edit-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+    </style>
 
     <script type="module" src="/src/admin.js"></script>
 </body>
