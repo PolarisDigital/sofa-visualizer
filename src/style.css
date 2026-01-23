@@ -51,13 +51,21 @@ body {
     font-weight: 300;
     /* Thinner base weight */
 
-    /* ANIMATED MESH GRADIENT */
+    /* ANIMATED MESH GRADIENT - Edge-to-Edge */
     background: linear-gradient(-45deg, #eff6ff, #dbeafe, #bfdbfe, #93c5fd);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     background-color: #3b82f6;
-    height: 100vh;
-    overflow: hidden;
+    background-attachment: fixed;
+
+    /* Full viewport coverage */
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Dynamic viewport for iOS */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+
     -webkit-font-smoothing: antialiased;
     color: var(--text-primary);
 }
@@ -681,10 +689,17 @@ body {
    ============================================ */
 @media (min-width: 768px) and (max-width: 1024px) {
     .app-layout {
-        padding: 40px;
+        /* Edge-to-edge with safe area padding */
+        padding: 48px;
+        padding-top: calc(48px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+        padding-left: calc(48px + env(safe-area-inset-left, 0px));
+        padding-right: calc(48px + env(safe-area-inset-right, 0px));
         gap: 28px;
         height: 100vh;
+        height: 100dvh;
         max-height: 100vh;
+        max-height: 100dvh;
         overflow: hidden;
         box-sizing: border-box;
     }
