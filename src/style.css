@@ -931,20 +931,29 @@ body {
         z-index: 99;
     }
 
-    .control-section:has(.toggle-switch) .section-title {
-        display: block;
+    /* Target the h3 in accordion-header for white text */
+    #styleSection .accordion-header h3 {
         color: white !important;
-        font-size: 0.55rem;
+        font-size: 0.55rem !important;
         text-align: center;
-        margin-bottom: 6px;
+        margin: 0 0 6px 0;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
-    /* Hide accordion arrow/toggle on mobile */
-    .control-section:has(.toggle-switch) .accordion-toggle,
-    .control-section:has(.toggle-switch) .accordion-arrow,
-    .accordion-header::after,
-    .section-title::after {
+    /* Hide accordion chevron/arrow on mobile */
+    #styleSection .accordion-header .chevron {
         display: none !important;
+    }
+
+    /* Make accordion header transparent and non-clickable */
+    #styleSection .accordion-header {
+        background: transparent;
+        padding: 0;
+        border: none;
+        cursor: default;
+        pointer-events: none;
     }
 
     .toggle-switch {
