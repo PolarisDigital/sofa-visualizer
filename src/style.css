@@ -749,87 +749,82 @@ body {
 }
 
 /* ============================================
-   RESPONSIVE: Mobile (< 768px)
+   RESPONSIVE: Mobile (< 768px) - OPZIONE A
+   Upload-first layout with side-by-side uploads
    ============================================ */
 @media (max-width: 767px) {
 
-    /* Root adjustments */
+    /* === ROOT === */
     :root {
         --sidebar-width: 100%;
-        --radius-panel: 20px;
+        --radius-panel: 16px;
     }
 
-    /* Main layout - vertical stack */
+    /* === MAIN LAYOUT === */
     .app-layout {
+        display: flex;
         flex-direction: column;
         padding: 12px;
-        padding-bottom: env(safe-area-inset-bottom, 12px);
-        gap: 12px;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        /* Dynamic viewport height for mobile browsers */
-        overflow-y: auto;
-        overflow-x: hidden;
+        padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        padding-bottom: 0;
+        /* Footer handles bottom */
+        gap: 10px;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
-    /* Sidebar becomes full-width container */
+    /* Sidebar becomes content container */
     .sidebar {
         display: contents;
     }
 
-    /* 1. HEADER - Sticky at top */
+    /* === 1. HEADER - Compact top bar === */
     .sidebar-header {
-        order: 0;
+        order: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         width: 100%;
-        height: auto;
-        min-height: 56px;
-        padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.85);
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-radius: 16px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        border-radius: 14px;
         border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        min-height: 50px;
+        flex-shrink: 0;
     }
 
-    /* Logo sizing for mobile */
     .logo-container {
         flex-shrink: 0;
     }
 
     .custom-logo {
-        max-height: 32px;
-        max-width: 100px;
+        max-height: 28px;
+        max-width: 80px;
         object-fit: contain;
     }
 
     .logo {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
-    .logo span {
-        font-weight: 600;
-    }
-
-    /* User menu compact */
+    /* User menu - compact */
     .user-profile-widget {
-        padding: 4px;
+        padding: 4px 8px;
         gap: 6px;
     }
 
     .user-info-text {
         display: none;
-        /* Hide username on mobile */
     }
 
     .user-avatar {
         width: 26px;
         height: 26px;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
     }
 
     .btn-logout-mini {
@@ -837,203 +832,248 @@ body {
         height: 26px;
     }
 
-    /* 2. CANVAS AREA - Compact */
-    .main-canvas {
-        order: 1;
+    /* === 2. CONTROLS - Upload + Style === */
+    .sidebar-scroll {
+        order: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
         width: 100%;
-        min-height: auto;
-        gap: 12px;
+        padding: 0;
+        overflow: visible;
+        flex-shrink: 0;
     }
 
-    /* Canvas header - icons only */
+    /* Control sections - remove extra margins */
+    .control-section {
+        margin-bottom: 0;
+    }
+
+    /* Section titles smaller */
+    .section-title {
+        font-size: 0.65rem;
+        margin-bottom: 6px;
+        letter-spacing: 0.08em;
+    }
+
+    /* === UPLOAD WIDGETS - Side by side === */
+    .control-section:has(.upload-widget) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    /* Hide individual section titles for uploads */
+    .control-section:has(.upload-widget) .section-title {
+        grid-column: span 2;
+        display: none;
+        /* Hide "1. FOTO DIVANO" etc */
+    }
+
+    .upload-widget {
+        height: 90px;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .upload-widget::before {
+        content: attr(data-label);
+        position: absolute;
+        top: 6px;
+        left: 8px;
+        font-size: 0.55rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        z-index: 1;
+    }
+
+    .upload-widget .placeholder-icon {
+        font-size: 1.5rem;
+    }
+
+    .upload-widget .placeholder-text {
+        font-size: 0.65rem;
+        margin-top: 4px;
+    }
+
+    /* Uploaded image thumbnail */
+    .upload-widget .uploaded-preview {
+        border-radius: 10px;
+    }
+
+    /* === STYLE SELECTOR - Compact pills === */
+    .control-section:has(.toggle-switch) {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .toggle-switch {
+        margin-bottom: 0;
+    }
+
+    .toggle-option {
+        padding: 8px 16px;
+        font-size: 0.7rem;
+        border-radius: 8px;
+    }
+
+    /* Hide accordion on mobile - show inline */
+    .accordion {
+        display: none;
+    }
+
+    /* === 3. CANVAS AREA === */
+    .main-canvas {
+        order: 3;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        /* Allow shrinking */
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Canvas header with actions */
     .canvas-header-glass {
-        padding: 10px 14px;
-        border-radius: 14px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        flex-shrink: 0;
     }
 
     .canvas-title {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
     }
 
     .canvas-actions {
-        gap: 6px;
+        gap: 4px;
     }
 
-    /* ACTION BUTTONS - Icons only on mobile */
+    /* Action buttons - icon only */
     .btn-action {
-        padding: 8px 10px;
-        border-radius: 10px;
+        padding: 8px;
+        border-radius: 8px;
         font-size: 0;
-        /* Hide text */
-        min-width: 36px;
+        min-width: 34px;
+        height: 34px;
         justify-content: center;
     }
 
     .btn-action svg {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
     }
 
-    /* Canvas image area */
+    /* Canvas image area - fills remaining space */
     .canvas-area {
-        min-height: 200px;
-        max-height: 35vh;
+        flex: 1;
+        min-height: 150px;
+        border-radius: 14px;
+        overflow: hidden;
     }
 
     .canvas-area .canvas-image-wrapper img {
-        max-height: 32vh;
-        border-radius: 14px;
+        max-height: 100%;
+        border-radius: 12px;
     }
 
-    /* Empty state smaller */
+    /* Empty state - compact */
     .canvas-area .empty-state {
-        padding: 20px;
+        padding: 16px;
     }
 
     .canvas-area .empty-state .empty-icon {
         font-size: 2rem;
-        margin-bottom: 10px;
-    }
-
-    .canvas-area .empty-state h2 {
-        font-size: 1rem;
-    }
-
-    .canvas-area .empty-state p {
-        font-size: 0.8rem;
-    }
-
-    /* 3. CONTROLS SECTION - Scrollable */
-    .sidebar-scroll {
-        order: 2;
-        width: 100%;
-        overflow: visible;
-        padding: 0;
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    /* Control sections */
-    .control-section {
-        margin-bottom: 16px;
-    }
-
-    .section-title {
-        font-size: 0.7rem;
-        margin-bottom: 10px;
-    }
-
-    /* Upload widgets - side by side on mobile */
-    .upload-widget {
-        height: 100px;
-    }
-
-    /* Toggle switch */
-    .toggle-switch {
         margin-bottom: 8px;
     }
 
-    .toggle-option {
-        padding: 6px;
-        font-size: 0.7rem;
+    .canvas-area .empty-state h2 {
+        font-size: 0.95rem;
     }
 
-    /* Accordion */
-    .accordion-header h3 {
-        font-size: 0.7rem;
+    .canvas-area .empty-state p {
+        font-size: 0.75rem;
     }
 
-    /* 4. FOOTER - Fixed at bottom */
+    /* === 4. FOOTER - Fixed Generate Button === */
     .sidebar-footer {
-        order: 3;
-        width: 100%;
+        order: 4;
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         padding: 12px 16px;
-        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-        background: rgba(255, 255, 255, 0.9);
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-radius: 20px 20px 0 0;
+        border-radius: 16px 16px 0 0;
         z-index: 100;
         border-top: 1px solid rgba(0, 0, 0, 0.05);
-        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
     }
 
     .footer-actions {
-        gap: 8px;
-    }
-
-    .btn-generate {
-        padding: 12px;
-        border-radius: 14px;
-        font-size: 0.85rem;
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 
     .btn-reset-mini {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-    }
-
-    .credits {
-        font-size: 0.65rem;
-        margin-top: 8px;
-    }
-
-    /* Spacer for fixed footer */
-    .app-layout::after {
-        content: '';
-        display: block;
-        height: 90px;
-        order: 4;
-        width: 100%;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         flex-shrink: 0;
     }
 
-    /* Lightbox mobile adjustments */
-    .lightbox-content {
-        max-width: 95vw;
-        max-height: 85vh;
+    .btn-generate {
+        flex: 1;
+        padding: 14px;
         border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
     }
 
-    .close-lightbox {
-        top: 15px;
-        right: 15px;
-        font-size: 1.5rem;
+    .credits {
+        font-size: 0.6rem;
+        margin-top: 6px;
+        text-align: center;
     }
 
-    /* Modal adjustments for mobile */
-    .modal-glass {
-        width: 95%;
+    /* === MODALS === */
+    .modal-glass,
+    .custom-modal-glass {
+        width: 94%;
         max-width: none;
-        margin: 0 auto;
-        border-radius: 20px;
+        border-radius: 18px;
     }
 
     .modal-header {
-        padding: 16px 20px;
+        padding: 14px 18px;
     }
 
     .modal-body {
-        padding: 20px;
+        padding: 18px;
     }
 
     .modal-footer {
-        padding: 12px 20px;
+        padding: 12px 18px;
     }
 
-    /* Custom modal mobile */
-    .custom-modal-glass {
-        width: 92%;
-        border-radius: 20px;
+    /* Lightbox */
+    .lightbox-content {
+        max-width: 96vw;
+        max-height: 80vh;
+        border-radius: 14px;
+    }
+
+    .close-lightbox {
+        top: 12px;
+        right: 12px;
     }
 }
 
