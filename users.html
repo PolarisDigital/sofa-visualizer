@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Utenti - FabricAI</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .users-layout {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .users-header {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-panel);
+            box-shadow: var(--island-shadow);
+            border: 1px solid var(--island-border);
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .users-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .users-card {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-panel);
+            box-shadow: var(--island-shadow);
+            border: 1px solid var(--island-border);
+            overflow: hidden;
+        }
+
+        /* Create User Form */
+        .create-user-form {
+            padding: 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .create-user-form.active {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 150px;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Users Table */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 16px 24px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.02);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .users-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .users-table tr:hover td {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .role-badge.admin {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+        }
+
+        .role-badge.venditore {
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: white;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-icon.danger:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .btn-icon svg {
+            width: 14px;
+            height: 14px;
+            color: var(--text-secondary);
+        }
+
+        .btn-icon.danger:hover svg {
+            color: #ef4444;
+        }
+
+        .empty-users {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-muted);
+        }
+
+        .empty-users .icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: var(--text-primary);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: black;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="users-layout">
+        <div class="users-header">
+            <div>
+                <a href="/admin.html" class="back-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Torna alla Galleria
+                </a>
+                <h1>👥 Gestione Utenti</h1>
+            </div>
+            <button class="btn-primary" id="toggleCreateForm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Nuovo Utente
+            </button>
+        </div>
+
+        <div class="users-card">
+            <!-- Create User Form -->
+            <div class="create-user-form" id="createUserForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="newUserEmail" placeholder="nome@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="newUserPassword" placeholder="Minimo 6 caratteri">
+                    </div>
+                    <div class="form-group">
+                        <label>Ruolo</label>
+                        <select id="newUserRole">
+                            <option value="venditore">Venditore</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" id="cancelCreate">Annulla</button>
+                    <button class="btn-primary" id="confirmCreate">Crea Utente</button>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div id="usersContainer">
+                <div class="loading">Caricamento utenti...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getSession } from '/src/supabase.js';
+
+        const BACKEND_URL = 'https://sofa-visualizer-production.up.railway.app';
+        let users = [];
+
+        // Check auth
+        const session = await getSession();
+        if (!session?.user) {
+            window.location.href = '/login.html';
+        }
+
+        // Admin check
+        const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
+        if (!ADMIN_EMAILS.includes(session.user.email)) {
+            alert('Accesso non autorizzato');
+            window.location.href = '/';
+        }
+
+        // DOM
+        const els = {
+            toggleCreateForm: document.getElementById('toggleCreateForm'),
+            createUserForm: document.getElementById('createUserForm'),
+            cancelCreate: document.getElementById('cancelCreate'),
+            confirmCreate: document.getElementById('confirmCreate'),
+            newUserEmail: document.getElementById('newUserEmail'),
+            newUserPassword: document.getElementById('newUserPassword'),
+            newUserRole: document.getElementById('newUserRole'),
+            usersContainer: document.getElementById('usersContainer')
+        };
+
+        // Event Listeners
+        els.toggleCreateForm.addEventListener('click', () => {
+            els.createUserForm.classList.toggle('active');
+        });
+
+        els.cancelCreate.addEventListener('click', () => {
+            els.createUserForm.classList.remove('active');
+            clearForm();
+        });
+
+        els.confirmCreate.addEventListener('click', createUser);
+
+        // Load users
+        await loadUsers();
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/admin/users`);
+                const data = await response.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                users = data.users;
+                renderUsers();
+            } catch (err) {
+                console.error('Error loading users:', err);
+                els.usersContainer.innerHTML = `
+                    <div class="empty-users">
+                        <div class="icon">⚠️</div>
+                        <p>Errore nel caricamento: ${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderUsers() {
+            if (users.length === 0) {
+                els.usersContainer.innerHTML = `
+                    <div class="empty-users">
+                        <div class="icon">👥</div>
+                        <p>Nessun utente trovato</p>
+                    </div>
+                `;
+                return;
+            }
+
+            els.usersContainer.innerHTML = `
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Ruolo</th>
+                            <th>Creato</th>
+                            <th>Ultimo Accesso</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr data-user-id="${user.id}">
+                                <td>${user.email}</td>
+                                <td>
+                                    <span class="role-badge ${user.role}">${user.role}</span>
+                                </td>
+                                <td>${formatDate(user.created_at)}</td>
+                                <td>${user.last_sign_in ? formatDate(user.last_sign_in) : 'Mai'}</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="btn-icon" onclick="toggleRole('${user.id}', '${user.role}')" title="Cambia ruolo">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="9" cy="7" r="4"/>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                            </svg>
+                                        </button>
+                                        <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="Elimina">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function createUser() {
+            const email = els.newUserEmail.value.trim();
+            const password = els.newUserPassword.value;
+            const role = els.newUserRole.value;
+
+            if (!email || !password) {
+                alert('Email e password sono obbligatori');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('La password deve essere di almeno 6 caratteri');
+                return;
+            }
+
+            els.confirmCreate.textContent = 'Creazione...';
+            els.confirmCreate.disabled = true;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error);
+
+                clearForm();
+                els.createUserForm.classList.remove('active');
+                await loadUsers();
+                alert('Utente creato con successo!');
+            } catch (err) {
+                console.error('Error creating user:', err);
+                alert('Errore: ' + err.message);
+            } finally {
+                els.confirmCreate.textContent = 'Crea Utente';
+                els.confirmCreate.disabled = false;
+            }
+        }
+
+        window.toggleRole = async (userId, currentRole) => {
+            const newRole = currentRole === 'admin' ? 'venditore' : 'admin';
+            if (!confirm(`Cambiare ruolo a "${newRole}"?`)) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error);
+
+                await loadUsers();
+            } catch (err) {
+                console.error('Error updating role:', err);
+                alert('Errore: ' + err.message);
+            }
+        };
+
+        window.deleteUser = async (userId) => {
+            if (!confirm('Eliminare questo utente? L\'azione è irreversibile.')) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error);
+
+                await loadUsers();
+                alert('Utente eliminato');
+            } catch (err) {
+                console.error('Error deleting user:', err);
+                alert('Errore: ' + err.message);
+            }
+        };
+
+        function clearForm() {
+            els.newUserEmail.value = '';
+            els.newUserPassword.value = '';
+            els.newUserRole.value = 'venditore';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('it-IT', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 // CORS per permettere richieste dal frontend
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -152,7 +152,162 @@ Generate the edited image maintaining photorealistic quality.`;
     }
 });
 
+// ============================================
+// USER MANAGEMENT ENDPOINTS (Admin only)
+// ============================================
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Admin client with service role key (full access)
+const supabaseAdmin = supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;
+
+// GET /api/admin/users - List all users
+app.get('/api/admin/users', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    try {
+        // Get users from auth
+        const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+        if (authError) throw authError;
+
+        // Get profiles
+        const { data: profiles, error: profilesError } = await supabaseAdmin
+            .from('profiles')
+            .select('*');
+        if (profilesError) throw profilesError;
+
+        // Merge auth users with profiles
+        const users = authUsers.users.map(user => {
+            const profile = profiles?.find(p => p.id === user.id);
+            return {
+                id: user.id,
+                email: user.email,
+                role: profile?.role || 'venditore',
+                full_name: profile?.full_name || '',
+                created_at: user.created_at,
+                last_sign_in: user.last_sign_in_at
+            };
+        });
+
+        res.json({ success: true, users });
+    } catch (error) {
+        console.error('Error listing users:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// POST /api/admin/users - Create new user
+app.post('/api/admin/users', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    const { email, password, role, full_name } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, error: 'Email and password required' });
+    }
+
+    try {
+        // Create user in auth
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true // Auto-confirm email
+        });
+
+        if (authError) throw authError;
+
+        // Update profile with role and name
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .upsert({
+                id: authData.user.id,
+                email: email,
+                role: role || 'venditore',
+                full_name: full_name || ''
+            });
+
+        if (profileError) throw profileError;
+
+        res.json({
+            success: true,
+            user: {
+                id: authData.user.id,
+                email: authData.user.email,
+                role: role || 'venditore'
+            }
+        });
+    } catch (error) {
+        console.error('Error creating user:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// DELETE /api/admin/users/:id - Delete user
+app.delete('/api/admin/users/:id', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    const { id } = req.params;
+
+    try {
+        // Delete from auth (profile will cascade delete)
+        const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// PUT /api/admin/users/:id/role - Update user role
+app.put('/api/admin/users/:id/role', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!role || !['admin', 'venditore'].includes(role)) {
+        return res.status(400).json({ success: false, error: 'Valid role required (admin or venditore)' });
+    }
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('profiles')
+            .update({ role })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating role:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`🚀 Sofa Visualizer API running on port ${PORT} (v2.0 Flash Stable)`);
+    console.log(`🚀 Sofa Visualizer API running on port ${PORT}`);
     console.log(`   POST /api/gemini/edit - Image editing with Gemini`);
+    console.log(`   GET  /api/admin/users - List users`);
+    console.log(`   POST /api/admin/users - Create user`);
+    console.log(`   DELETE /api/admin/users/:id - Delete user`);
+    console.log(`   PUT /api/admin/users/:id/role - Update role`);
 });
