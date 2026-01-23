@@ -955,8 +955,8 @@ body {
     }
 
     .toggle-option.active {
-        background: white;
-        color: var(--accent);
+        background: rgba(255, 255, 255, 0.35);
+        color: white;
     }
 
     /* Hide accordion on mobile - show inline */

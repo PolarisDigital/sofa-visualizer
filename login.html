@@ -253,10 +253,9 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-logo" id="loginLogoContainer">
+                <div class="login-logo" id="loginLogoContainer" style="opacity: 0; transition: opacity 0.3s ease;">
                     <span class="logo-text">Fabric<span>AI</span></span>
                 </div>
-                <p class="login-subtitle">Visualizza il tuo divano con nuovi tessuti</p>
             </div>
 
 
@@ -296,18 +295,25 @@
 
         // Load custom logo
         async function loadLogo() {
+            const container = document.getElementById('loginLogoContainer');
             try {
                 const { data } = supabase.storage.from('generated-images').getPublicUrl('company-logo.png');
                 if (data?.publicUrl) {
                     const img = new Image();
                     img.onload = () => {
-                        const container = document.getElementById('loginLogoContainer');
                         container.innerHTML = `<img src="${data.publicUrl}?t=${Date.now()}" alt="Logo" style="max-height: 50px; max-width: 200px; object-fit: contain;">`;
+                        container.style.opacity = '1';
                     };
-                    img.onerror = () => { }; // Keep default text
+                    img.onerror = () => {
+                        container.style.opacity = '1'; // Show fallback
+                    };
                     img.src = data.publicUrl + '?t=' + Date.now();
+                } else {
+                    container.style.opacity = '1';
                 }
-            } catch (e) { /* Keep default */ }
+            } catch (e) {
+                container.style.opacity = '1';
+            }
         }
         loadLogo();
 
