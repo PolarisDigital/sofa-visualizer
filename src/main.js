@@ -155,8 +155,14 @@ function setupEventListeners() {
         });
     }
 
-    // Reset Button
-    if (els.resetBtn) els.resetBtn.addEventListener('click', resetApp);
+    // Reset Button - with event prevention to ensure confirm dialog works
+    if (els.resetBtn) {
+        els.resetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetApp();
+        });
+    }
 
     // Output Mode Toggle
     if (els.toggleOptions) {
