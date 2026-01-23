@@ -396,21 +396,19 @@ async function uploadLogo(event) {
         logoEls.uploadLogoBtn.textContent = 'Caricamento...';
         logoEls.uploadLogoBtn.disabled = true;
 
-        // Delete old logo if exists
-        await supabase.storage
-            .from('generated-images')
-            .remove(['company-logo.png']);
-
-        // Upload new logo
+        // Upload new logo (upsert will replace if exists)
         const { error: uploadError } = await supabase.storage
             .from('generated-images')
             .upload('company-logo.png', file, {
                 contentType: file.type,
                 upsert: true,
-                cacheControl: '3600'
+                cacheControl: '0' // No cache to ensure fresh logo
             });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+            console.error('Upload error details:', uploadError);
+            throw uploadError;
+        }
 
         // Get public URL
         const { data } = supabase.storage
