@@ -323,220 +323,225 @@
     <script type="module">
         import { getSession } from '/src/supabase.js';
 
-        const BACKEND_URL = 'https://sofa-visualizer-production.up.railway.app';
-        let users = [];
+        // Wrap in async IIFE to avoid top-level await
+        (async function init() {
+            const BACKEND_URL = 'https://sofa-visualizer-production.up.railway.app';
+            let users = [];
 
-        // Check auth
-        const session = await getSession();
-        if (!session?.user) {
-            window.location.href = '/login.html';
-        }
-
-        // Admin check
-        const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
-        if (!ADMIN_EMAILS.includes(session.user.email)) {
-            alert('Accesso non autorizzato');
-            window.location.href = '/';
-        }
-
-        // DOM
-        const els = {
-            toggleCreateForm: document.getElementById('toggleCreateForm'),
-            createUserForm: document.getElementById('createUserForm'),
-            cancelCreate: document.getElementById('cancelCreate'),
-            confirmCreate: document.getElementById('confirmCreate'),
-            newUserEmail: document.getElementById('newUserEmail'),
-            newUserPassword: document.getElementById('newUserPassword'),
-            newUserRole: document.getElementById('newUserRole'),
-            usersContainer: document.getElementById('usersContainer')
-        };
-
-        // Event Listeners
-        els.toggleCreateForm.addEventListener('click', () => {
-            els.createUserForm.classList.toggle('active');
-        });
-
-        els.cancelCreate.addEventListener('click', () => {
-            els.createUserForm.classList.remove('active');
-            clearForm();
-        });
-
-        els.confirmCreate.addEventListener('click', createUser);
-
-        // Load users
-        await loadUsers();
-
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/admin/users`);
-                const data = await response.json();
-
-                if (!data.success) throw new Error(data.error);
-
-                users = data.users;
-                renderUsers();
-            } catch (err) {
-                console.error('Error loading users:', err);
-                els.usersContainer.innerHTML = `
-                    <div class="empty-users">
-                        <div class="icon">⚠️</div>
-                        <p>Errore nel caricamento: ${err.message}</p>
-                    </div>
-                `;
-            }
-        }
-
-        function renderUsers() {
-            if (users.length === 0) {
-                els.usersContainer.innerHTML = `
-                    <div class="empty-users">
-                        <div class="icon">👥</div>
-                        <p>Nessun utente trovato</p>
-                    </div>
-                `;
+            // Check auth
+            const session = await getSession();
+            if (!session?.user) {
+                window.location.href = '/login.html';
                 return;
             }
 
-            els.usersContainer.innerHTML = `
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Ruolo</th>
-                            <th>Creato</th>
-                            <th>Ultimo Accesso</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${users.map(user => `
-                            <tr data-user-id="${user.id}">
-                                <td>${user.email}</td>
-                                <td>
-                                    <span class="role-badge ${user.role}">${user.role}</span>
-                                </td>
-                                <td>${formatDate(user.created_at)}</td>
-                                <td>${user.last_sign_in ? formatDate(user.last_sign_in) : 'Mai'}</td>
-                                <td>
-                                    <div class="user-actions">
-                                        <button class="btn-icon" onclick="toggleRole('${user.id}', '${user.role}')" title="Cambia ruolo">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                                <circle cx="9" cy="7" r="4"/>
-                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="Elimina">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"/>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        async function createUser() {
-            const email = els.newUserEmail.value.trim();
-            const password = els.newUserPassword.value;
-            const role = els.newUserRole.value;
-
-            if (!email || !password) {
-                alert('Email e password sono obbligatori');
+            // Admin check
+            const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
+            if (!ADMIN_EMAILS.includes(session.user.email)) {
+                alert('Accesso non autorizzato');
+                window.location.href = '/';
                 return;
             }
 
-            if (password.length < 6) {
-                alert('La password deve essere di almeno 6 caratteri');
-                return;
-            }
+            // DOM
+            const els = {
+                toggleCreateForm: document.getElementById('toggleCreateForm'),
+                createUserForm: document.getElementById('createUserForm'),
+                cancelCreate: document.getElementById('cancelCreate'),
+                confirmCreate: document.getElementById('confirmCreate'),
+                newUserEmail: document.getElementById('newUserEmail'),
+                newUserPassword: document.getElementById('newUserPassword'),
+                newUserRole: document.getElementById('newUserRole'),
+                usersContainer: document.getElementById('usersContainer')
+            };
 
-            els.confirmCreate.textContent = 'Creazione...';
-            els.confirmCreate.disabled = true;
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, role })
-                });
-
-                const data = await response.json();
-                if (!data.success) throw new Error(data.error);
-
-                clearForm();
-                els.createUserForm.classList.remove('active');
-                await loadUsers();
-                alert('Utente creato con successo!');
-            } catch (err) {
-                console.error('Error creating user:', err);
-                alert('Errore: ' + err.message);
-            } finally {
-                els.confirmCreate.textContent = 'Crea Utente';
-                els.confirmCreate.disabled = false;
-            }
-        }
-
-        window.toggleRole = async (userId, currentRole) => {
-            const newRole = currentRole === 'admin' ? 'venditore' : 'admin';
-            if (!confirm(`Cambiare ruolo a "${newRole}"?`)) return;
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/role`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ role: newRole })
-                });
-
-                const data = await response.json();
-                if (!data.success) throw new Error(data.error);
-
-                await loadUsers();
-            } catch (err) {
-                console.error('Error updating role:', err);
-                alert('Errore: ' + err.message);
-            }
-        };
-
-        window.deleteUser = async (userId) => {
-            if (!confirm('Eliminare questo utente? L\'azione è irreversibile.')) return;
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-                if (!data.success) throw new Error(data.error);
-
-                await loadUsers();
-                alert('Utente eliminato');
-            } catch (err) {
-                console.error('Error deleting user:', err);
-                alert('Errore: ' + err.message);
-            }
-        };
-
-        function clearForm() {
-            els.newUserEmail.value = '';
-            els.newUserPassword.value = '';
-            els.newUserRole.value = 'venditore';
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleDateString('it-IT', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
+            // Event Listeners
+            els.toggleCreateForm.addEventListener('click', () => {
+                els.createUserForm.classList.toggle('active');
             });
-        }
+
+            els.cancelCreate.addEventListener('click', () => {
+                els.createUserForm.classList.remove('active');
+                clearForm();
+            });
+
+            els.confirmCreate.addEventListener('click', createUser);
+
+            // Load users
+            await loadUsers();
+
+            async function loadUsers() {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/admin/users`);
+                    const data = await response.json();
+
+                    if (!data.success) throw new Error(data.error);
+
+                    users = data.users;
+                    renderUsers();
+                } catch (err) {
+                    console.error('Error loading users:', err);
+                    els.usersContainer.innerHTML = `
+                        <div class="empty-users">
+                            <div class="icon">⚠️</div>
+                            <p>Errore nel caricamento: ${err.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function renderUsers() {
+                if (users.length === 0) {
+                    els.usersContainer.innerHTML = `
+                        <div class="empty-users">
+                            <div class="icon">👥</div>
+                            <p>Nessun utente trovato</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                els.usersContainer.innerHTML = `
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Ruolo</th>
+                                <th>Creato</th>
+                                <th>Ultimo Accesso</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr data-user-id="${user.id}">
+                                    <td>${user.email}</td>
+                                    <td>
+                                        <span class="role-badge ${user.role}">${user.role}</span>
+                                    </td>
+                                    <td>${formatDate(user.created_at)}</td>
+                                    <td>${user.last_sign_in ? formatDate(user.last_sign_in) : 'Mai'}</td>
+                                    <td>
+                                        <div class="user-actions">
+                                            <button class="btn-icon" onclick="toggleRole('${user.id}', '${user.role}')" title="Cambia ruolo">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                                    <circle cx="9" cy="7" r="4"/>
+                                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                </svg>
+                                            </button>
+                                            <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="Elimina">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            async function createUser() {
+                const email = els.newUserEmail.value.trim();
+                const password = els.newUserPassword.value;
+                const role = els.newUserRole.value;
+
+                if (!email || !password) {
+                    alert('Email e password sono obbligatori');
+                    return;
+                }
+
+                if (password.length < 6) {
+                    alert('La password deve essere di almeno 6 caratteri');
+                    return;
+                }
+
+                els.confirmCreate.textContent = 'Creazione...';
+                els.confirmCreate.disabled = true;
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, role })
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.error);
+
+                    clearForm();
+                    els.createUserForm.classList.remove('active');
+                    await loadUsers();
+                    alert('Utente creato con successo!');
+                } catch (err) {
+                    console.error('Error creating user:', err);
+                    alert('Errore: ' + err.message);
+                } finally {
+                    els.confirmCreate.textContent = 'Crea Utente';
+                    els.confirmCreate.disabled = false;
+                }
+            }
+
+            window.toggleRole = async (userId, currentRole) => {
+                const newRole = currentRole === 'admin' ? 'venditore' : 'admin';
+                if (!confirm(`Cambiare ruolo a "${newRole}"?`)) return;
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/role`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: newRole })
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.error);
+
+                    await loadUsers();
+                } catch (err) {
+                    console.error('Error updating role:', err);
+                    alert('Errore: ' + err.message);
+                }
+            };
+
+            window.deleteUser = async (userId) => {
+                if (!confirm('Eliminare questo utente? L\'azione è irreversibile.')) return;
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.error);
+
+                    await loadUsers();
+                    alert('Utente eliminato');
+                } catch (err) {
+                    console.error('Error deleting user:', err);
+                    alert('Errore: ' + err.message);
+                }
+            };
+
+            function clearForm() {
+                els.newUserEmail.value = '';
+                els.newUserPassword.value = '';
+                els.newUserRole.value = 'venditore';
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                return new Date(dateStr).toLocaleDateString('it-IT', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
+        })();
     </script>
 </body>
 
