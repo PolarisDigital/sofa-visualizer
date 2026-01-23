@@ -52,13 +52,12 @@ html {
 }
 
 body {
-    /* THIN MODERN FONT - Orbai Style */
+    /* THIN MODERN FONT */
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 300;
 
-    /* STATIC GRADIENT - Blue light to dark with white */
-    background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 25%, #60a5fa 50%, #3b82f6 75%, #2563eb 100%);
-    background-attachment: fixed;
+    /* Fallback solid color */
+    background: #3b82f6;
 
     /* Edge-to-edge with scroll lock */
     height: 100%;
@@ -74,6 +73,19 @@ body {
 
     -webkit-font-smoothing: antialiased;
     color: var(--text-primary);
+}
+
+/* Gradient background via pseudo-element for edge-to-edge */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 25%, #60a5fa 50%, #3b82f6 75%, #2563eb 100%);
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Layout */
