@@ -1083,8 +1083,8 @@ body {
         border-radius: 12px;
         font-size: 0.95rem;
         font-weight: 700;
-        background: white;
-        color: var(--accent);
+        background: white !important;
+        color: var(--accent) !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
     }
 
