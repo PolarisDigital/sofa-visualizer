@@ -71,11 +71,15 @@
       </div>
 
       <footer class="sidebar-footer">
-        <div class="footer-actions" style="display: flex; gap: 8px;">
-          <button id="resetBtn" class="btn-secondary" style="flex: 1; display: none;" title="Ricomincia da capo">
-            ↺ Reset
+        <div class="footer-actions">
+          <button id="resetBtn" class="btn-reset-mini" style="display: none;" title="Ricomincia da capo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
           </button>
-          <button id="generateBtn" class="btn-generate" disabled style="flex: 2;">
+          <button id="generateBtn" class="btn-generate" disabled>
             <span class="btn-text">Genera</span>
             <span class="loading-spinner" style="display: none;"></span>
           </button>
@@ -88,16 +92,34 @@
 
     <!-- RIGHT MAIN: CANVAS -->
     <main class="main-canvas">
-      <div class="canvas-header">
+      <!-- Unified Glass Header -->
+      <div class="canvas-header-glass">
         <div class="canvas-title">Anteprima</div>
         <div class="canvas-actions">
-          <button class="text-btn" id="downloadBtn" title="Scarica l'immagine" disabled>Download</button>
-          <button class="text-btn" id="shareBtn" title="Condividi il risultato" disabled>Condividi</button>
+          <button class="btn-action" id="downloadBtn" title="Scarica l'immagine" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download
+          </button>
+          <button class="btn-action" id="shareBtn" title="Condividi il risultato" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+            Condividi
+          </button>
         </div>
       </div>
 
-      <div class="canvas-viewer" id="canvasViewer">
-        <div class="empty-state">
+      <!-- Canvas Area (no white block, just background) -->
+      <div class="canvas-area" id="canvasViewer">
+        <div class="empty-state" id="emptyState">
           <div class="empty-icon">🛋️</div>
           <h2>Pronto a visualizzare il tuo divano?</h2>
           <p>Carica una foto del divano e una foto del tessuto per iniziare.</p>
@@ -105,12 +127,9 @@
 
         <div class="canvas-image-wrapper" id="imageWrapper" style="display: none;">
           <img id="mainImage" src="" alt="Risultato">
-          <div class="compare-slider" id="compareSlider">
-            <!-- Feature futura: Slider Prima/Dopo -->
-          </div>
         </div>
 
-        <!-- Loading State overlay on canvas -->
+        <!-- Loading State overlay -->
         <div class="canvas-loading" id="canvasLoading" style="display: none;">
           <div class="spinner-large"></div>
           <p>L'IA sta lavorando sul tuo design...</p>

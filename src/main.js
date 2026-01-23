@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         canvasViewer: document.getElementById('canvasViewer'),
         canvasLoading: document.getElementById('canvasLoading'),
         mainImage: document.getElementById('mainImage'),
+        emptyState: document.getElementById('emptyState'), // V2: Empty state element
         downloadBtn: document.getElementById('downloadBtn'),
         shareBtn: document.getElementById('shareBtn'),
         // Lightbox
