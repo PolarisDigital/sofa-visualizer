@@ -52,7 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load data
     await loadFolders();
     await loadImages();
+    await loadLogo();
 });
+
+// Logo DOM elements (added after main init)
+let logoEls = {};
 
 function setupEventListeners() {
     // Add folder button
@@ -85,6 +89,24 @@ function setupEventListeners() {
     document.querySelector('[data-folder-id="all"]').addEventListener('click', () => {
         selectFolder('all');
     });
+
+    // Logo upload
+    logoEls = {
+        logoInput: document.getElementById('logoInput'),
+        uploadLogoBtn: document.getElementById('uploadLogoBtn'),
+        currentLogo: document.getElementById('currentLogo'),
+        logoPlaceholder: document.getElementById('logoPlaceholder')
+    };
+
+    if (logoEls.uploadLogoBtn) {
+        logoEls.uploadLogoBtn.addEventListener('click', () => {
+            logoEls.logoInput.click();
+        });
+    }
+
+    if (logoEls.logoInput) {
+        logoEls.logoInput.addEventListener('change', uploadLogo);
+    }
 }
 
 // Load folders from database
@@ -309,3 +331,87 @@ window.deleteImage = async (imageId) => {
         alert('Errore nell\'eliminazione dell\'immagine');
     }
 };
+
+// ============================================
+// Logo Management Functions
+// ============================================
+
+async function loadLogo() {
+    try {
+        // Try to get logo from storage bucket
+        const { data } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl('company-logo.png');
+
+        // Check if file exists by making a HEAD request
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+
+        if (response.ok && logoEls.currentLogo) {
+            logoEls.currentLogo.src = data.publicUrl + '?t=' + Date.now();
+            logoEls.currentLogo.style.display = 'block';
+            if (logoEls.logoPlaceholder) {
+                logoEls.logoPlaceholder.style.display = 'none';
+            }
+        }
+    } catch (err) {
+        console.log('No logo found or error loading:', err);
+    }
+}
+
+async function uploadLogo(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Seleziona un\'immagine valida');
+        return;
+    }
+
+    // Max 2MB
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Il logo deve essere al massimo 2MB');
+        return;
+    }
+
+    try {
+        logoEls.uploadLogoBtn.textContent = 'Caricamento...';
+        logoEls.uploadLogoBtn.disabled = true;
+
+        // Delete old logo if exists
+        await supabase.storage
+            .from('generated-images')
+            .remove(['company-logo.png']);
+
+        // Upload new logo
+        const { error: uploadError } = await supabase.storage
+            .from('generated-images')
+            .upload('company-logo.png', file, {
+                contentType: file.type,
+                upsert: true,
+                cacheControl: '3600'
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl('company-logo.png');
+
+        // Update preview
+        logoEls.currentLogo.src = data.publicUrl + '?t=' + Date.now();
+        logoEls.currentLogo.style.display = 'block';
+        logoEls.logoPlaceholder.style.display = 'none';
+
+        alert('Logo aggiornato con successo!');
+
+    } catch (err) {
+        console.error('Error uploading logo:', err);
+        alert('Errore nel caricamento del logo');
+    } finally {
+        logoEls.uploadLogoBtn.textContent = 'Carica Logo';
+        logoEls.uploadLogoBtn.disabled = false;
+        logoEls.logoInput.value = '';
+    }
+}

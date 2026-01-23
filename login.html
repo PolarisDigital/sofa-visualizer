@@ -8,29 +8,82 @@
     <link rel="stylesheet" href="/src/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .auth-container {
-            max-width: 400px;
-            margin: 80px auto;
-            padding: 0 24px;
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
         }
 
-        .auth-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
-            padding: 40px;
-            box-shadow: var(--shadow-card);
+        .login-container {
+            width: 100%;
+            max-width: 420px;
         }
 
-        .auth-card h1 {
-            font-size: 1.75rem;
+        .login-card {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-panel);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--island-border);
+            overflow: hidden;
+        }
+
+        .login-header {
+            padding: 40px 40px 24px;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin-bottom: 8px;
-            text-align: center;
         }
 
-        .auth-card .subtitle {
+        .login-logo span {
+            color: var(--accent);
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .login-tabs {
+            display: flex;
+            margin: 0 40px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 12px;
             text-align: center;
-            margin-bottom: 32px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-tab.active {
+            background: white;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .login-body {
+            padding: 32px 40px 40px;
         }
 
         .form-group {
@@ -39,128 +92,197 @@
 
         .form-group label {
             display: block;
+            font-size: 0.75rem;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
             margin-bottom: 8px;
-            font-size: 0.9rem;
         }
 
         .form-group input {
             width: 100%;
             padding: 14px 16px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            font-size: 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--text-primary);
             transition: all 0.2s;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-bg);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .auth-btn {
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .login-btn {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
             margin-top: 8px;
         }
 
-        .auth-footer {
+        .login-btn:hover {
+            background: black;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-footer {
             text-align: center;
-            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .login-footer a {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .auth-footer a {
-            color: var(--accent);
             text-decoration: none;
-            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
         }
 
-        .error-message {
-            background: #fef2f2;
-            color: #dc2626;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
+        .login-footer a:hover {
+            color: var(--accent);
+        }
+
+        .alert-message {
+            padding: 14px 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             display: none;
         }
 
-        .tabs {
+        .alert-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        /* Decorative elements */
+        .login-decoration {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.05));
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        .login-decoration.top {
+            top: -100px;
+            right: -100px;
+        }
+
+        .login-decoration.bottom {
+            bottom: -100px;
+            left: -100px;
+        }
+
+        /* Icon in the center */
+        .login-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent), #1d4ed8);
+            border-radius: 16px;
             display: flex;
-            margin-bottom: 32px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--text-secondary);
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-
-        .tab:hover {
-            color: var(--text-primary);
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 1.5rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1>Fabric<span style="color: var(--accent);">AI</span></h1>
-            <p class="subtitle">Accedi al tuo account</p>
+    <!-- Decorative blurs -->
+    <div class="login-decoration top"></div>
+    <div class="login-decoration bottom"></div>
 
-            <div class="tabs">
-                <div class="tab active" data-tab="login">Accedi</div>
-                <div class="tab" data-tab="signup">Registrati</div>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">🪑</div>
+                <div class="login-logo">Fabric<span>AI</span></div>
+                <p class="login-subtitle">Visualizza il tuo divano con nuovi tessuti</p>
             </div>
 
-            <div id="errorMessage" class="error-message"></div>
+            <div class="login-tabs">
+                <div class="login-tab active" data-tab="login">Accedi</div>
+                <div class="login-tab" data-tab="signup">Registrati</div>
+            </div>
 
-            <!-- Login Form -->
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" placeholder="nome@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary auth-btn">Accedi</button>
-            </form>
+            <div class="login-body">
+                <div id="alertMessage" class="alert-message"></div>
 
-            <!-- Signup Form (hidden by default) -->
-            <form id="signupForm" style="display: none;">
-                <div class="form-group">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" placeholder="nome@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="Minimo 6 caratteri" required minlength="6">
-                </div>
-                <div class="form-group">
-                    <label for="signupPasswordConfirm">Conferma Password</label>
-                    <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary auth-btn">Crea account</button>
-            </form>
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="nome@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="login-btn">Accedi</button>
+                </form>
 
-            <div class="auth-footer">
-                <a href="/">← Torna alla home</a>
+                <!-- Signup Form (hidden by default) -->
+                <form id="signupForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="nome@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Minimo 6 caratteri" required
+                            minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPasswordConfirm">Conferma Password</label>
+                        <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="login-btn">Crea Account</button>
+                </form>
+
+                <div class="login-footer">
+                    <a href="/">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        Torna al visualizzatore
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -176,15 +298,15 @@
         });
 
         // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
+        document.querySelectorAll('.login-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
                 const isLogin = tab.dataset.tab === 'login';
                 document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
                 document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block';
-                document.getElementById('errorMessage').style.display = 'none';
+                hideAlert();
             });
         });
 
@@ -198,7 +320,7 @@
                 await signIn(email, password);
                 window.location.href = '/';
             } catch (error) {
-                showError(error.message);
+                showAlert(error.message, 'error');
             }
         });
 
@@ -210,24 +332,27 @@
             const confirmPassword = document.getElementById('signupPasswordConfirm').value;
 
             if (password !== confirmPassword) {
-                showError('Le password non corrispondono');
+                showAlert('Le password non corrispondono', 'error');
                 return;
             }
 
             try {
                 await signUp(email, password);
-                showError('Account creato! Controlla la tua email per confermare.', true);
+                showAlert('Account creato! Controlla la tua email per confermare.', 'success');
             } catch (error) {
-                showError(error.message);
+                showAlert(error.message, 'error');
             }
         });
 
-        function showError(message, isSuccess = false) {
-            const el = document.getElementById('errorMessage');
+        function showAlert(message, type = 'error') {
+            const el = document.getElementById('alertMessage');
             el.textContent = message;
+            el.className = `alert-message ${type}`;
             el.style.display = 'block';
-            el.style.background = isSuccess ? '#f0fdf4' : '#fef2f2';
-            el.style.color = isSuccess ? '#16a34a' : '#dc2626';
+        }
+
+        function hideAlert() {
+            document.getElementById('alertMessage').style.display = 'none';
         }
     </script>
 </body>

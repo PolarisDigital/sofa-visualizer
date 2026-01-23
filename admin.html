@@ -336,6 +336,63 @@
             color: var(--text-secondary);
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
+
+        /* Settings Section */
+        .sidebar-settings {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-content {
+            padding: 16px;
+        }
+
+        .setting-item {
+            margin-bottom: 16px;
+        }
+
+        .setting-item label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .logo-preview {
+            width: 100%;
+            height: 80px;
+            border: 1px dashed rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+        }
+
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            padding: 8px;
+        }
+
+        .logo-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .logo-placeholder span {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .logo-placeholder small {
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 
@@ -371,6 +428,29 @@
 
                 <!-- Dynamic folders list -->
                 <div id="foldersList"></div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="sidebar-settings">
+                <div class="sidebar-header">
+                    <h2>⚙️ Impostazioni</h2>
+                </div>
+                <div class="settings-content">
+                    <div class="setting-item">
+                        <label>Logo Aziendale</label>
+                        <div class="logo-preview" id="logoPreview">
+                            <img id="currentLogo" src="" alt="Logo" style="display: none;">
+                            <div class="logo-placeholder" id="logoPlaceholder">
+                                <span>📷</span>
+                                <small>Nessun logo</small>
+                            </div>
+                        </div>
+                        <input type="file" id="logoInput" accept="image/*" hidden>
+                        <button class="btn-sm primary" id="uploadLogoBtn" style="width: 100%; margin-top: 8px;">
+                            Carica Logo
+                        </button>
+                    </div>
+                </div>
             </div>
         </aside>
 
