@@ -412,6 +412,179 @@
         .logo-placeholder small {
             font-size: 0.7rem;
         }
+
+        /* ===== MOBILE ADMIN STYLES ===== */
+        @media (max-width: 767px) {
+            .admin-layout {
+                flex-direction: column;
+                padding: 0;
+                gap: 0;
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            /* Hide sidebar by default on mobile */
+            .folders-sidebar {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 60px;
+                width: 100%;
+                min-width: 100%;
+                border-radius: 0;
+                z-index: 50;
+                overflow-y: auto;
+            }
+
+            .folders-sidebar.mobile-active {
+                display: flex;
+            }
+
+            /* Settings section separate for tab */
+            .sidebar-settings {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 60px;
+                width: 100%;
+                background: var(--island-bg);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                z-index: 50;
+                overflow-y: auto;
+                padding: 20px;
+            }
+
+            .sidebar-settings.mobile-active {
+                display: block;
+            }
+
+            /* Gallery main - full screen */
+            .gallery-main {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 60px;
+                padding: 0;
+                overflow-y: auto;
+            }
+
+            .gallery-main.mobile-active {
+                display: flex;
+            }
+
+            .gallery-header {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                border-radius: 0;
+                padding: 12px 16px;
+            }
+
+            .gallery-header h1 {
+                font-size: 0.95rem;
+            }
+
+            .back-link {
+                display: none;
+            }
+
+            .gallery-content {
+                padding: 16px;
+            }
+
+            /* 2-column grid on mobile */
+            .images-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .image-card {
+                border-radius: 12px;
+            }
+
+            .image-card-info {
+                padding: 10px;
+            }
+
+            .image-card-name {
+                font-size: 0.75rem;
+            }
+
+            .image-card-date {
+                font-size: 0.65rem;
+            }
+
+            .image-card-actions {
+                margin-top: 8px;
+            }
+
+            .btn-icon {
+                width: 28px;
+                height: 28px;
+            }
+
+            /* Mobile Tab Bar */
+            .mobile-tab-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(0, 0, 0, 0.08);
+                z-index: 100;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+
+            .tab-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                color: var(--text-muted);
+                text-decoration: none;
+                font-size: 0.65rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                cursor: pointer;
+                border: none;
+                background: none;
+            }
+
+            .tab-item.active {
+                color: var(--accent);
+            }
+
+            .tab-item svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .sidebar-header {
+                padding: 16px;
+            }
+
+            .folder-item {
+                padding: 12px 14px;
+            }
+        }
+
+        /* Hide tab bar on desktop */
+        .mobile-tab-bar {
+            display: none;
+        }
     </style>
 </head>
 
@@ -547,6 +720,88 @@
         <span class="close-lightbox">&times;</span>
         <img class="lightbox-content" id="lightboxImg">
     </div>
+
+    <!-- Mobile Tab Bar -->
+    <nav class="mobile-tab-bar">
+        <button class="tab-item" data-tab="folders">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            Cartelle
+        </button>
+        <button class="tab-item active" data-tab="photos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+            </svg>
+            Foto
+        </button>
+        <button class="tab-item" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            Impost.
+        </button>
+    </nav>
+
+    <script>
+        // Mobile Tab Switching
+        function initMobileTabs() {
+            const isMobile = window.matchMedia('(max-width: 767px)').matches;
+            if (!isMobile) return;
+
+            const tabs = document.querySelectorAll('.tab-item');
+            const sidebar = document.querySelector('.folders-sidebar');
+            const gallery = document.querySelector('.gallery-main');
+            const settings = document.querySelector('.sidebar-settings');
+
+            // Set initial state - Photos active
+            gallery.classList.add('mobile-active');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Hide all sections
+                    sidebar.classList.remove('mobile-active');
+                    gallery.classList.remove('mobile-active');
+                    settings.classList.remove('mobile-active');
+
+                    // Show selected section
+                    if (tabName === 'folders') {
+                        sidebar.classList.add('mobile-active');
+                    } else if (tabName === 'photos') {
+                        gallery.classList.add('mobile-active');
+                    } else if (tabName === 'settings') {
+                        settings.classList.add('mobile-active');
+                    }
+                });
+            });
+
+            // When folder is clicked, switch to photos tab
+            document.addEventListener('click', (e) => {
+                const folderItem = e.target.closest('.folder-item');
+                if (folderItem && isMobile) {
+                    setTimeout(() => {
+                        const photosTab = document.querySelector('[data-tab="photos"]');
+                        photosTab.click();
+                    }, 100);
+                }
+            });
+        }
+
+        // Run on DOM ready
+        document.addEventListener('DOMContentLoaded', initMobileTabs);
+        // Also run on resize
+        window.addEventListener('resize', initMobileTabs);
+    </script>
 
     <script type="module" src="/src/admin.js"></script>
 </body>
