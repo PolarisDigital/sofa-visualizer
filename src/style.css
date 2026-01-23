@@ -56,18 +56,21 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 300;
 
-    /* ANIMATED MESH GRADIENT */
-    background: linear-gradient(-45deg, #eff6ff, #dbeafe, #bfdbfe, #93c5fd);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    background-color: #3b82f6;
+    /* STATIC GRADIENT - Blue light to dark with white */
+    background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 25%, #60a5fa 50%, #3b82f6 75%, #2563eb 100%);
+    background-attachment: fixed;
 
-    /* Lock to viewport - NO SCROLL */
+    /* Edge-to-edge with scroll lock */
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 
     -webkit-font-smoothing: antialiased;
     color: var(--text-primary);
