@@ -64,7 +64,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Lightbox
         lightbox: document.getElementById('lightbox'),
         lightboxImg: document.getElementById('lightboxImg'),
-        closeLightbox: document.querySelector('.close-lightbox')
+        closeLightbox: document.querySelector('.close-lightbox'),
+        // Mobile post-gen
+        mobilePostGenBar: document.getElementById('mobilePostGenBar'),
+        mobileRefreshBtn: document.getElementById('mobileRefreshBtn'),
+        mobileShareBtn: document.getElementById('mobileShareBtn'),
+        shareBottomSheet: document.getElementById('shareBottomSheet'),
+        bottomSheetBackdrop: document.getElementById('bottomSheetBackdrop'),
+        sheetDownloadBtn: document.getElementById('sheetDownloadBtn'),
+        sheetShareBtn: document.getElementById('sheetShareBtn'),
+        sheetSaveBtn: document.getElementById('sheetSaveBtn')
     };
 
     await initAuth();
@@ -276,6 +285,69 @@ function setupEventListeners() {
     if (els.confirmSaveBtn) {
         els.confirmSaveBtn.addEventListener('click', saveImageToGallery);
     }
+
+    // === Mobile Post-Gen Bar Handlers ===
+    if (els.mobileRefreshBtn) {
+        els.mobileRefreshBtn.addEventListener('click', () => {
+            // Regenerate with same images
+            generateImage();
+        });
+    }
+
+    if (els.mobileShareBtn) {
+        els.mobileShareBtn.addEventListener('click', () => {
+            // Open bottom sheet
+            if (els.shareBottomSheet) {
+                els.shareBottomSheet.classList.add('active');
+            }
+        });
+    }
+
+    // Close bottom sheet on backdrop click
+    if (els.bottomSheetBackdrop) {
+        els.bottomSheetBackdrop.addEventListener('click', () => {
+            els.shareBottomSheet.classList.remove('active');
+        });
+    }
+
+    // Bottom sheet: Download
+    if (els.sheetDownloadBtn) {
+        els.sheetDownloadBtn.addEventListener('click', async () => {
+            els.shareBottomSheet.classList.remove('active');
+            const imgSrc = els.mainImage.src;
+            const link = document.createElement('a');
+            link.href = imgSrc;
+            link.download = `divano-${Date.now()}.jpg`;
+            link.click();
+        });
+    }
+
+    // Bottom sheet: Native Share
+    if (els.sheetShareBtn) {
+        els.sheetShareBtn.addEventListener('click', async () => {
+            els.shareBottomSheet.classList.remove('active');
+            if (navigator.share) {
+                const response = await fetch(els.mainImage.src);
+                const blob = await response.blob();
+                const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
+                navigator.share({
+                    title: 'Il mio nuovo divano',
+                    text: 'Guarda questo divano con il nuovo tessuto!',
+                    files: [file]
+                });
+            } else {
+                showAlert('Condivisione non supportata', 'warning');
+            }
+        });
+    }
+
+    // Bottom sheet: Save to Gallery
+    if (els.sheetSaveBtn) {
+        els.sheetSaveBtn.addEventListener('click', () => {
+            els.shareBottomSheet.classList.remove('active');
+            openSaveModal();
+        });
+    }
 }
 
 // --- V2: Image Upload Handler (supports both slots) ---
@@ -478,6 +550,13 @@ async function generateImage() {
         // Show canvas header on mobile
         const mainCanvas = document.querySelector('.main-canvas');
         if (mainCanvas) mainCanvas.classList.add('has-result');
+
+        // Mobile post-gen UI
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
+        if (isMobile && els.mobilePostGenBar) {
+            document.body.classList.add('has-generated-image');
+            els.mobilePostGenBar.style.display = 'flex';
+        }
 
         // Enable actions
         els.saveBtn.disabled = false;

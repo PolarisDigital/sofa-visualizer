@@ -1117,6 +1117,160 @@ body {
         color: white !important;
     }
 
+    /* === MOBILE POST-GENERATION UI === */
+
+    /* Hide footer and style selector when image is generated */
+    .main-canvas.has-result~.sidebar .sidebar-footer,
+    body.has-generated-image .sidebar-footer {
+        display: none !important;
+    }
+
+    body.has-generated-image #styleSection {
+        display: none !important;
+    }
+
+    /* Hide desktop canvas-header-glass on mobile when image generated */
+    body.has-generated-image .canvas-header-glass {
+        display: none !important;
+    }
+
+    /* Mobile Post-Generation Action Bar */
+    .mobile-post-gen-bar {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 20px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 50px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .post-gen-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .post-gen-btn svg {
+        width: 24px;
+        height: 24px;
+        stroke: white;
+    }
+
+    .post-gen-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Share Bottom Sheet */
+    .share-bottom-sheet {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+    }
+
+    .share-bottom-sheet.active {
+        display: block;
+    }
+
+    .bottom-sheet-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .bottom-sheet-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 20px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .bottom-sheet-handle {
+        width: 40px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+        margin: 0 auto 16px;
+    }
+
+    .bottom-sheet-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .bottom-sheet-option {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.04);
+        border: none;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .bottom-sheet-option:active {
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    .bottom-sheet-option svg {
+        width: 24px;
+        height: 24px;
+        stroke: var(--accent);
+    }
+
     /* === MODALS === */
     .modal-glass,
     .custom-modal-glass {
