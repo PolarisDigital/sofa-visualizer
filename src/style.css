@@ -933,7 +933,7 @@ body {
 
     /* Target the h3 in accordion-header for white text */
     #styleSection .accordion-header h3 {
-        color: white !important;
+        color: rgba(255, 255, 255, 0.85) !important;
         font-size: 0.55rem !important;
         text-align: center;
         margin: 0 0 6px 0;
@@ -1100,11 +1100,9 @@ body {
         border-radius: 12px;
         font-size: 0.95rem;
         font-weight: 700;
-        background: rgba(255, 255, 255, 0.9) !important;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: white !important;
         color: var(--accent) !important;
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.8);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
