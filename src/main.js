@@ -65,15 +65,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         lightbox: document.getElementById('lightbox'),
         lightboxImg: document.getElementById('lightboxImg'),
         closeLightbox: document.querySelector('.close-lightbox'),
-        // Mobile post-gen
-        mobilePostGenBar: document.getElementById('mobilePostGenBar'),
+        // Mobile overlays
+        mobileLoadingOverlay: document.getElementById('mobileLoadingOverlay'),
+        mobileResultOverlay: document.getElementById('mobileResultOverlay'),
+        mobileResultImage: document.getElementById('mobileResultImage'),
         mobileRefreshBtn: document.getElementById('mobileRefreshBtn'),
-        mobileShareBtn: document.getElementById('mobileShareBtn'),
-        shareBottomSheet: document.getElementById('shareBottomSheet'),
-        bottomSheetBackdrop: document.getElementById('bottomSheetBackdrop'),
-        sheetDownloadBtn: document.getElementById('sheetDownloadBtn'),
-        sheetShareBtn: document.getElementById('sheetShareBtn'),
-        sheetSaveBtn: document.getElementById('sheetSaveBtn')
+        mobileNativeShareBtn: document.getElementById('mobileNativeShareBtn'),
+        mobileSaveBtn: document.getElementById('mobileSaveBtn')
     };
 
     await initAuth();
@@ -286,65 +284,47 @@ function setupEventListeners() {
         els.confirmSaveBtn.addEventListener('click', saveImageToGallery);
     }
 
-    // === Mobile Post-Gen Bar Handlers ===
+    // === Mobile Result Overlay Button Handlers ===
     if (els.mobileRefreshBtn) {
         els.mobileRefreshBtn.addEventListener('click', () => {
-            // Regenerate with same images
+            // Hide result overlay and regenerate
+            if (els.mobileResultOverlay) {
+                els.mobileResultOverlay.style.display = 'none';
+            }
             generateImage();
         });
     }
 
-    if (els.mobileShareBtn) {
-        els.mobileShareBtn.addEventListener('click', () => {
-            // Open bottom sheet
-            if (els.shareBottomSheet) {
-                els.shareBottomSheet.classList.add('active');
-            }
-        });
-    }
-
-    // Close bottom sheet on backdrop click
-    if (els.bottomSheetBackdrop) {
-        els.bottomSheetBackdrop.addEventListener('click', () => {
-            els.shareBottomSheet.classList.remove('active');
-        });
-    }
-
-    // Bottom sheet: Download
-    if (els.sheetDownloadBtn) {
-        els.sheetDownloadBtn.addEventListener('click', async () => {
-            els.shareBottomSheet.classList.remove('active');
-            const imgSrc = els.mainImage.src;
-            const link = document.createElement('a');
-            link.href = imgSrc;
-            link.download = `divano-${Date.now()}.jpg`;
-            link.click();
-        });
-    }
-
-    // Bottom sheet: Native Share
-    if (els.sheetShareBtn) {
-        els.sheetShareBtn.addEventListener('click', async () => {
-            els.shareBottomSheet.classList.remove('active');
+    // Mobile: Native Share button
+    if (els.mobileNativeShareBtn) {
+        els.mobileNativeShareBtn.addEventListener('click', async () => {
+            const imgSrc = els.mobileResultImage?.src || els.mainImage.src;
             if (navigator.share) {
-                const response = await fetch(els.mainImage.src);
-                const blob = await response.blob();
-                const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
-                navigator.share({
-                    title: 'Il mio nuovo divano',
-                    text: 'Guarda questo divano con il nuovo tessuto!',
-                    files: [file]
-                });
+                try {
+                    const response = await fetch(imgSrc);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
+                    await navigator.share({
+                        title: 'Il mio nuovo divano',
+                        text: 'Guarda questo divano con il nuovo tessuto!',
+                        files: [file]
+                    });
+                } catch (err) {
+                    console.log('Share cancelled or failed:', err);
+                }
             } else {
-                showAlert('Condivisione non supportata', 'warning');
+                // Fallback: download
+                const link = document.createElement('a');
+                link.href = imgSrc;
+                link.download = `divano-${Date.now()}.jpg`;
+                link.click();
             }
         });
     }
 
-    // Bottom sheet: Save to Gallery
-    if (els.sheetSaveBtn) {
-        els.sheetSaveBtn.addEventListener('click', () => {
-            els.shareBottomSheet.classList.remove('active');
+    // Mobile: Save to Gallery button
+    if (els.mobileSaveBtn) {
+        els.mobileSaveBtn.addEventListener('click', () => {
             openSaveModal();
         });
     }
@@ -509,10 +489,18 @@ async function handleImageUpload(file, imageType) {
 async function generateImage() {
     if (!state.sofaImageBase64 || !state.fabricImageBase64) return;
 
+    // Check if mobile
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
     // UI Loading
     els.canvasLoading.style.display = 'flex';
     els.generateBtn.disabled = true;
     els.generateBtn.querySelector('.btn-text').textContent = 'Generazione...';
+
+    // Mobile loading overlay
+    if (isMobile && els.mobileLoadingOverlay) {
+        els.mobileLoadingOverlay.style.display = 'flex';
+    }
 
     try {
         console.log('Starting V2 generation with:', {
@@ -547,15 +535,16 @@ async function generateImage() {
         const resultSrc = `data:image/jpeg;base64,${data.image}`;
         els.mainImage.src = resultSrc;
 
-        // Show canvas header on mobile
+        // Show canvas header on mobile (legacy)
         const mainCanvas = document.querySelector('.main-canvas');
         if (mainCanvas) mainCanvas.classList.add('has-result');
 
-        // Mobile post-gen UI
-        const isMobile = window.matchMedia('(max-width: 767px)').matches;
-        if (isMobile && els.mobilePostGenBar) {
+        // Mobile fullscreen result overlay
+        if (isMobile && els.mobileResultOverlay && els.mobileResultImage) {
+            els.mobileResultImage.src = resultSrc;
+            els.mobileLoadingOverlay.style.display = 'none';
+            els.mobileResultOverlay.style.display = 'flex';
             document.body.classList.add('has-generated-image');
-            els.mobilePostGenBar.style.display = 'flex';
         }
 
         // Enable actions
@@ -569,6 +558,10 @@ async function generateImage() {
             showAlert('La generazione ha impiegato troppo tempo. Riprova.', 'warning');
         } else {
             showAlert('Errore generazione: ' + error.message, 'error');
+        }
+        // Hide mobile loading on error
+        if (isMobile && els.mobileLoadingOverlay) {
+            els.mobileLoadingOverlay.style.display = 'none';
         }
     } finally {
         els.canvasLoading.style.display = 'none';
