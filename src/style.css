@@ -682,13 +682,23 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
     .app-layout {
         padding: 40px;
-        padding-bottom: 40px;
         gap: 28px;
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
     .sidebar {
         width: 260px;
         min-width: 260px;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+
+    .main-canvas {
+        max-height: calc(100vh - 80px);
+        overflow: hidden;
     }
 
     /* Smaller logo on iPad */
@@ -707,9 +717,14 @@ body {
         font-size: 0.75rem;
     }
 
-    /* Adjust canvas */
+    /* Adjust canvas area to fit */
+    .canvas-area {
+        max-height: calc(100vh - 200px);
+        overflow: hidden;
+    }
+
     .canvas-area .canvas-image-wrapper img {
-        max-height: 60vh;
+        max-height: 55vh;
     }
 }
 
