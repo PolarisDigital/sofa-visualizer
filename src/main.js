@@ -475,6 +475,10 @@ async function generateImage() {
         const resultSrc = `data:image/jpeg;base64,${data.image}`;
         els.mainImage.src = resultSrc;
 
+        // Show canvas header on mobile
+        const mainCanvas = document.querySelector('.main-canvas');
+        if (mainCanvas) mainCanvas.classList.add('has-result');
+
         // Enable actions
         els.saveBtn.disabled = false;
         els.downloadBtn.disabled = false;

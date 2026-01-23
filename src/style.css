@@ -802,13 +802,13 @@ body {
     }
 
     .custom-logo {
-        max-height: 28px;
-        max-width: 80px;
+        max-height: 40px;
+        max-width: 100px;
         object-fit: contain;
     }
 
     .logo {
-        font-size: 0.85rem;
+        font-size: 1rem;
     }
 
     /* User menu - compact */
@@ -822,14 +822,19 @@ body {
     }
 
     .user-avatar {
-        width: 26px;
-        height: 26px;
-        font-size: 0.65rem;
+        width: 30px;
+        height: 30px;
+        font-size: 0.7rem;
     }
 
     .btn-logout-mini {
-        width: 26px;
-        height: 26px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .btn-logout-mini svg {
+        width: 16px;
+        height: 16px;
     }
 
     /* === 2. CONTROLS - Upload + Style === */
@@ -856,23 +861,28 @@ body {
         letter-spacing: 0.08em;
     }
 
-    /* === UPLOAD WIDGETS - Side by side === */
+    /* === UPLOAD WIDGETS - Full width === */
     .control-section:has(.upload-widget) {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 8px;
     }
 
     /* Hide individual section titles for uploads */
     .control-section:has(.upload-widget) .section-title {
-        grid-column: span 2;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    /* Hide hint text on mobile */
+    .control-section p {
         display: none;
-        /* Hide "1. FOTO DIVANO" etc */
     }
 
     .upload-widget {
-        height: 90px;
-        border-radius: 12px;
+        height: 110px;
+        width: 100%;
+        border-radius: 14px;
         position: relative;
     }
 
@@ -938,11 +948,16 @@ body {
         gap: 8px;
     }
 
-    /* Canvas header with actions */
+    /* Canvas header with actions - hidden until image generated */
     .canvas-header-glass {
         padding: 8px 12px;
         border-radius: 12px;
         flex-shrink: 0;
+        display: none;
+    }
+
+    .main-canvas.has-result .canvas-header-glass {
+        display: flex;
     }
 
     .canvas-title {
@@ -955,17 +970,17 @@ body {
 
     /* Action buttons - icon only */
     .btn-action {
-        padding: 8px;
-        border-radius: 8px;
+        padding: 10px;
+        border-radius: 10px;
         font-size: 0;
-        min-width: 34px;
-        height: 34px;
+        min-width: 40px;
+        height: 40px;
         justify-content: center;
     }
 
     .btn-action svg {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
     }
 
     /* Canvas image area - fills remaining space */
@@ -1011,7 +1026,7 @@ body {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-radius: 16px 16px 0 0;
+        border-radius: 0;
         z-index: 100;
         border-top: 1px solid rgba(0, 0, 0, 0.05);
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
