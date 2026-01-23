@@ -96,6 +96,14 @@
       <div class="canvas-header-glass">
         <div class="canvas-title">Anteprima</div>
         <div class="canvas-actions">
+          <button class="btn-action" id="saveBtn" title="Salva in galleria" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Salva
+          </button>
           <button class="btn-action" id="downloadBtn" title="Scarica l'immagine" disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -142,6 +150,44 @@
   <div class="lightbox" id="lightbox">
     <span class="close-lightbox">&times;</span>
     <img class="lightbox-content" id="lightboxImg">
+  </div>
+
+  <!-- Save Modal -->
+  <div class="modal-overlay" id="saveModal" style="display: none;">
+    <div class="modal-glass">
+      <div class="modal-header">
+        <h3>Salva Immagine</h3>
+        <button class="modal-close" id="closeSaveModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="imageName">Nome Immagine</label>
+          <input type="text" id="imageName" placeholder="Es: Divano verde salotto" />
+        </div>
+        <div class="form-group">
+          <label for="folderSelect">Cartella</label>
+          <div class="folder-select-wrapper">
+            <select id="folderSelect">
+              <option value="">Seleziona cartella...</option>
+            </select>
+            <button class="btn-new-folder" id="newFolderBtn" title="Nuova cartella">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group" id="newFolderGroup" style="display: none;">
+          <label for="newFolderName">Nome Nuova Cartella</label>
+          <input type="text" id="newFolderName" placeholder="Es: Progetti Gennaio" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelSaveBtn">Annulla</button>
+        <button class="btn-primary" id="confirmSaveBtn">Salva</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="/src/main.js"></script>

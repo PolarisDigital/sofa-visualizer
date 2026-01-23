@@ -46,9 +46,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         canvasViewer: document.getElementById('canvasViewer'),
         canvasLoading: document.getElementById('canvasLoading'),
         mainImage: document.getElementById('mainImage'),
-        emptyState: document.getElementById('emptyState'), // V2: Empty state element
+        emptyState: document.getElementById('emptyState'),
+        saveBtn: document.getElementById('saveBtn'),
         downloadBtn: document.getElementById('downloadBtn'),
         shareBtn: document.getElementById('shareBtn'),
+        // Save Modal
+        saveModal: document.getElementById('saveModal'),
+        closeSaveModal: document.getElementById('closeSaveModal'),
+        imageName: document.getElementById('imageName'),
+        folderSelect: document.getElementById('folderSelect'),
+        newFolderBtn: document.getElementById('newFolderBtn'),
+        newFolderGroup: document.getElementById('newFolderGroup'),
+        newFolderName: document.getElementById('newFolderName'),
+        cancelSaveBtn: document.getElementById('cancelSaveBtn'),
+        confirmSaveBtn: document.getElementById('confirmSaveBtn'),
         // Lightbox
         lightbox: document.getElementById('lightbox'),
         lightboxImg: document.getElementById('lightboxImg'),
@@ -219,6 +230,28 @@ function setupEventListeners() {
                 alert('Condivisione non supportata su questo dispositivo');
             }
         });
+    }
+
+    // Save Modal handlers
+    if (els.saveBtn) {
+        els.saveBtn.addEventListener('click', openSaveModal);
+    }
+    if (els.closeSaveModal) {
+        els.closeSaveModal.addEventListener('click', closeSaveModal);
+    }
+    if (els.cancelSaveBtn) {
+        els.cancelSaveBtn.addEventListener('click', closeSaveModal);
+    }
+    if (els.saveModal) {
+        els.saveModal.addEventListener('click', (e) => {
+            if (e.target === els.saveModal) closeSaveModal();
+        });
+    }
+    if (els.newFolderBtn) {
+        els.newFolderBtn.addEventListener('click', toggleNewFolderInput);
+    }
+    if (els.confirmSaveBtn) {
+        els.confirmSaveBtn.addEventListener('click', saveImageToGallery);
     }
 }
 
@@ -417,6 +450,7 @@ async function generateImage() {
         els.mainImage.src = resultSrc;
 
         // Enable actions
+        els.saveBtn.disabled = false;
         els.downloadBtn.disabled = false;
         els.shareBtn.disabled = false;
 
@@ -432,5 +466,148 @@ async function generateImage() {
         els.generateBtn.disabled = false;
         els.generateBtn.querySelector('.btn-text').textContent = 'Genera';
         updateGenerateButton();
+    }
+}
+
+// ============================================
+// Save Modal Functions
+// ============================================
+
+async function openSaveModal() {
+    if (!state.user) {
+        alert('Devi accedere per salvare le immagini');
+        window.location.href = '/login.html';
+        return;
+    }
+
+    // Reset form
+    els.imageName.value = '';
+    els.newFolderName.value = '';
+    els.newFolderGroup.style.display = 'none';
+
+    // Load folders
+    await loadFoldersForModal();
+
+    // Show modal
+    els.saveModal.style.display = 'flex';
+}
+
+function closeSaveModal() {
+    els.saveModal.style.display = 'none';
+}
+
+async function loadFoldersForModal() {
+    try {
+        const { data, error } = await supabase
+            .from('folders')
+            .select('*')
+            .order('name');
+
+        if (error) throw error;
+
+        // Populate dropdown
+        els.folderSelect.innerHTML = '<option value="">Seleziona cartella...</option>';
+        data.forEach(folder => {
+            els.folderSelect.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+        });
+    } catch (err) {
+        console.error('Error loading folders:', err);
+    }
+}
+
+function toggleNewFolderInput() {
+    const isVisible = els.newFolderGroup.style.display !== 'none';
+    els.newFolderGroup.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) {
+        els.newFolderName.focus();
+    }
+}
+
+async function saveImageToGallery() {
+    const imageName = els.imageName.value.trim();
+    const selectedFolderId = els.folderSelect.value;
+    const newFolderName = els.newFolderName.value.trim();
+
+    // Validation
+    if (!imageName) {
+        alert('Inserisci un nome per l\'immagine');
+        return;
+    }
+
+    if (!selectedFolderId && !newFolderName) {
+        alert('Seleziona una cartella o creane una nuova');
+        return;
+    }
+
+    // Disable button during save
+    els.confirmSaveBtn.disabled = true;
+    els.confirmSaveBtn.textContent = 'Salvataggio...';
+
+    try {
+        let folderId = selectedFolderId;
+
+        // Create new folder if needed
+        if (newFolderName) {
+            const { data: newFolder, error: folderError } = await supabase
+                .from('folders')
+                .insert({ name: newFolderName, created_by: state.user.email })
+                .select()
+                .single();
+
+            if (folderError) throw folderError;
+            folderId = newFolder.id;
+        }
+
+        // Convert base64 to blob for upload
+        const mainImageSrc = els.mainImage.src;
+        const base64Data = mainImageSrc.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+        // Generate unique filename
+        const fileName = `${Date.now()}-${imageName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('generated-images')
+            .upload(fileName, blob, {
+                contentType: 'image/jpeg',
+                cacheControl: '3600'
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl(fileName);
+
+        // Save record to database
+        const { error: dbError } = await supabase
+            .from('saved_images')
+            .insert({
+                name: imageName,
+                folder_id: folderId,
+                image_url: urlData.publicUrl,
+                created_by: state.user.email
+            });
+
+        if (dbError) throw dbError;
+
+        // Success
+        closeSaveModal();
+        alert('Immagine salvata con successo!');
+
+    } catch (err) {
+        console.error('Error saving image:', err);
+        alert('Errore nel salvataggio: ' + err.message);
+    } finally {
+        els.confirmSaveBtn.disabled = false;
+        els.confirmSaveBtn.textContent = 'Salva';
     }
 }
