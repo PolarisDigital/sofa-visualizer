@@ -81,24 +81,23 @@ async function initAuth() {
         const initial = state.user.email.charAt(0).toUpperCase();
         const username = state.user.email.split('@')[0];
 
-        // Admin Check
-        const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
-        const isAdmin = ADMIN_EMAILS.includes(state.user.email);
-
-        const adminBtn = isAdmin ? `
-            <a href="/admin.html" class="btn-logout-mini" title="Admin Dashboard" style="margin-right:4px; text-decoration:none;">
+        // Gallery access button for all authenticated users
+        const galleryBtn = `
+            <a href="/admin.html" class="btn-logout-mini" title="Gestisci Galleria" style="margin-right:4px; text-decoration:none;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 0 1 0 2.83 2 2 0 0 1 -2.83 0l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33 1.65 1.65 0 0 0 -1 1.51v.1a2 2 0 0 1 -2 2 2 2 0 0 1 -2 -2v-.1a1.65 1.65 0 0 0 -1 -1.51 1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 0 1 -2.83 0 2 2 0 0 1 0 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82 1.65 1.65 0 0 0 -1.51 -1h-.1a2 2 0 0 1 -2 -2 2 2 0 0 1 2 -2h.1a1.65 1.65 0 0 0 1.51 -1 1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 0 1 0 -2.83 2 2 0 0 1 2.83 0l.06 .06a1.65 1.65 0 0 0 1.82 .33h.1a1.65 1.65 0 0 0 1 -1.51v-.1a2 2 0 0 1 2 -2 2 2 0 0 1 2 2v.1a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v.1a1.65 1.65 0 0 0 1.51 1h.1a2 2 0 0 1 2 2 2 2 0 0 1 -2 2h-.1a1.65 1.65 0 0 0 -1.51 1z"></path>
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
                 </svg>
             </a>
-        ` : '';
+        `;
 
         els.userMenu.innerHTML = `
             <div class="user-profile-widget">
                 <div class="user-avatar">${initial}</div>
                 <div class="user-info-text">${username}</div>
-                ${adminBtn}
+                ${galleryBtn}
                 <button class="btn-logout-mini" id="logoutBtn" title="Esci">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
