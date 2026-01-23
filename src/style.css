@@ -49,8 +49,6 @@
 html {
     height: 100%;
     overflow: hidden;
-    position: fixed;
-    width: 100%;
 }
 
 body {
@@ -63,7 +61,6 @@ body {
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     background-color: #3b82f6;
-    background-attachment: fixed;
 
     /* Lock to viewport - NO SCROLL */
     height: 100%;
@@ -71,11 +68,6 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 
     -webkit-font-smoothing: antialiased;
     color: var(--text-primary);
@@ -1228,26 +1220,26 @@ body {
 /* Empty State (centered text on background) */
 .canvas-area .empty-state {
     text-align: center;
-    color: var(--text-secondary);
+    color: white;
     padding: 40px;
 }
 
 .canvas-area .empty-state .empty-icon {
     font-size: 3rem;
     margin-bottom: 16px;
-    opacity: 0.6;
+    opacity: 0.9;
 }
 
 .canvas-area .empty-state h2 {
     font-size: 1.2rem;
     font-weight: 500;
     margin-bottom: 8px;
-    color: var(--text-primary);
+    color: white;
 }
 
 .canvas-area .empty-state p {
     font-size: 0.9rem;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Loading overlay */
