@@ -19,6 +19,29 @@
         .login-container {
             width: 100%;
             max-width: 420px;
+            padding: 0 16px;
+        }
+
+        @media (max-width: 767px) {
+            .login-container {
+                padding: 0 20px;
+            }
+
+            .login-card {
+                border-radius: 20px;
+            }
+
+            .login-header {
+                padding: 32px 24px 20px;
+            }
+
+            .login-tabs {
+                margin: 0 24px;
+            }
+
+            .login-body {
+                padding: 24px;
+            }
         }
 
         .login-card {
@@ -231,7 +254,9 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="login-icon">🪑</div>
-                <div class="login-logo">Fabric<span>AI</span></div>
+                <div class="login-logo" id="loginLogoContainer">
+                    <span class="logo-text">Fabric<span>AI</span></span>
+                </div>
                 <p class="login-subtitle">Visualizza il tuo divano con nuovi tessuti</p>
             </div>
 
@@ -288,7 +313,24 @@
     </div>
 
     <script type="module">
-        import { signIn, signUp, getSession } from '/src/supabase.js';
+        import { signIn, signUp, getSession, supabase } from '/src/supabase.js';
+        
+        // Load custom logo
+        async function loadLogo() {
+            try {
+                const { data } = supabase.storage.from('generated-images').getPublicUrl('company-logo.png');
+                if (data?.publicUrl) {
+                    const img = new Image();
+                    img.onload = () => {
+                        const container = document.getElementById('loginLogoContainer');
+                        container.innerHTML = `<img src="${data.publicUrl}?t=${Date.now()}" alt="Logo" style="max-height: 50px; max-width: 200px; object-fit: contain;">`;
+                    };
+                    img.onerror = () => {}; // Keep default text
+                    img.src = data.publicUrl + '?t=' + Date.now();
+                }
+            } catch (e) { /* Keep default */ }
+        }
+        loadLogo();
 
         // Check if already logged in
         getSession().then(session => {
