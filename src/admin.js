@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     els.confirmNewFolder = document.getElementById('confirmNewFolder');
     els.cancelNewFolder = document.getElementById('cancelNewFolder');
     els.deleteFolderBtn = document.getElementById('deleteFolderBtn');
+    els.editFolderBtn = document.getElementById('editFolderBtn');
     els.lightbox = document.getElementById('lightbox');
     els.lightboxImg = document.getElementById('lightboxImg');
     els.closeLightbox = document.querySelector('.close-lightbox');
@@ -87,6 +88,11 @@ function setupEventListeners() {
 
     // Delete folder
     els.deleteFolderBtn.addEventListener('click', deleteCurrentFolder);
+
+    // Edit/Rename folder
+    if (els.editFolderBtn) {
+        els.editFolderBtn.addEventListener('click', renameCurrentFolder);
+    }
 
     // Lightbox
     els.closeLightbox.addEventListener('click', () => {
@@ -175,10 +181,12 @@ async function selectFolder(folderId) {
     if (folderId === 'all') {
         els.currentFolderName.textContent = 'Tutte le immagini';
         els.deleteFolderBtn.style.display = 'none';
+        if (els.editFolderBtn) els.editFolderBtn.style.display = 'none';
     } else {
         const folder = folders.find(f => f.id === folderId);
         els.currentFolderName.textContent = folder?.name || 'Cartella';
         els.deleteFolderBtn.style.display = 'flex';
+        if (els.editFolderBtn) els.editFolderBtn.style.display = 'flex';
     }
 
     await loadImages();
@@ -309,6 +317,44 @@ async function deleteCurrentFolder() {
     } catch (err) {
         console.error('Error deleting folder:', err);
         showAlert('Errore nell\'eliminazione della cartella', 'error');
+    }
+}
+
+// Rename current folder
+async function renameCurrentFolder() {
+    if (currentFolderId === 'all') return;
+
+    const folder = folders.find(f => f.id === currentFolderId);
+    if (!folder) return;
+
+    const { showPrompt } = await import('./modal.js');
+    const newName = await showPrompt(
+        'Rinomina cartella',
+        {
+            placeholder: 'Nuovo nome...',
+            defaultValue: folder.name,
+            confirmText: 'Rinomina',
+            cancelText: 'Annulla'
+        }
+    );
+
+    if (!newName || newName.trim() === '' || newName === folder.name) return;
+
+    try {
+        const { error } = await supabase
+            .from('folders')
+            .update({ name: newName.trim() })
+            .eq('id', currentFolderId);
+
+        if (error) throw error;
+
+        // Refresh
+        await loadFolders();
+        els.currentFolderName.textContent = newName.trim();
+        showAlert('Cartella rinominata', 'success');
+    } catch (err) {
+        console.error('Error renaming folder:', err);
+        showAlert('Errore nel rinominare la cartella', 'error');
     }
 }
 
