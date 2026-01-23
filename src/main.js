@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { getSession, signOut } from './supabase.js';
+import { showAlert, showConfirm } from './modal.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -131,19 +132,36 @@ function updateGenerateButton() {
 }
 
 // --- Company Settings (Logo) ---
-function loadCompanySettings() {
-    const customLogo = localStorage.getItem('company_logo');
-    if (customLogo) {
-        const logoContainer = document.getElementById('logoContainer');
-        if (logoContainer) {
-            logoContainer.innerHTML = `<img src="${customLogo}" alt="Company Logo" class="custom-logo">`;
+async function loadCompanySettings() {
+    try {
+        // Load logo from Supabase Storage
+        const { data } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl('company-logo.png');
+
+        // Check if logo file exists
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+
+        if (response.ok) {
+            const logoContainer = document.getElementById('logoContainer');
+            if (logoContainer) {
+                // Add cache buster to prevent stale logos
+                logoContainer.innerHTML = `<img src="${data.publicUrl}?t=${Date.now()}" alt="Company Logo" class="custom-logo">`;
+            }
         }
+    } catch (err) {
+        console.log('No custom logo found, using default');
     }
 }
 
 // --- Reset ---
-function resetApp() {
-    if (confirm('Vuoi davvero cancellare tutto e ricominciare?')) {
+async function resetApp() {
+    const confirmed = await showConfirm('Vuoi davvero cancellare tutto e ricominciare?', {
+        confirmText: 'Sì, ricomincia',
+        cancelText: 'Annulla',
+        danger: true
+    });
+    if (confirmed) {
         window.location.reload();
     }
 }
@@ -227,7 +245,7 @@ function setupEventListeners() {
                     files: [file]
                 });
             } else {
-                alert('Condivisione non supportata su questo dispositivo');
+                showAlert('Condivisione non supportata su questo dispositivo', 'warning');
             }
         });
     }
@@ -257,7 +275,10 @@ function setupEventListeners() {
 
 // --- V2: Image Upload Handler (supports both slots) ---
 async function handleImageUpload(file, imageType) {
-    if (file.size > 20 * 1024 * 1024) return alert('File troppo grande (max 20MB)');
+    if (file.size > 20 * 1024 * 1024) {
+        showAlert('File troppo grande (max 20MB)', 'error');
+        return;
+    }
 
     // Determine which widget we're working with
     const issofa = imageType === 'sofa';
@@ -310,7 +331,7 @@ async function handleImageUpload(file, imageType) {
             }
         } catch (err) {
             console.error('HEIC conversion error:', err);
-            alert('Errore nella conversione HEIC. Prova a salvare l\'immagine come JPG prima di caricarla.');
+            showAlert('Errore nella conversione HEIC. Prova a salvare l\'immagine come JPG prima di caricarla.', 'error');
             return;
         }
     }
@@ -393,16 +414,16 @@ async function handleImageUpload(file, imageType) {
 
             } catch (err) {
                 console.error('Image processing error:', err);
-                alert('Errore nel processare l\'immagine');
+                showAlert('Errore nel processare l\'immagine', 'error');
             }
         };
         img.onerror = () => {
-            alert('Impossibile caricare questa immagine. Prova un altro formato (JPG, PNG).');
+            showAlert('Impossibile caricare questa immagine. Prova un altro formato (JPG, PNG).', 'error');
         };
         img.src = e.target.result;
     };
     reader.onerror = () => {
-        alert('Errore nella lettura del file');
+        showAlert('Errore nella lettura del file', 'error');
     };
     reader.readAsDataURL(processedFile);
 }
@@ -457,9 +478,9 @@ async function generateImage() {
     } catch (error) {
         console.error(error);
         if (error.name === 'AbortError') {
-            alert('La generazione ha impiegato troppo tempo. Riprova.');
+            showAlert('La generazione ha impiegato troppo tempo. Riprova.', 'warning');
         } else {
-            alert('Errore generazione: ' + error.message);
+            showAlert('Errore generazione: ' + error.message, 'error');
         }
     } finally {
         els.canvasLoading.style.display = 'none';
@@ -475,7 +496,7 @@ async function generateImage() {
 
 async function openSaveModal() {
     if (!state.user) {
-        alert('Devi accedere per salvare le immagini');
+        await showAlert('Devi accedere per salvare le immagini', 'warning');
         window.location.href = '/login.html';
         return;
     }
@@ -530,12 +551,12 @@ async function saveImageToGallery() {
 
     // Validation
     if (!imageName) {
-        alert('Inserisci un nome per l\'immagine');
+        showAlert('Inserisci un nome per l\'immagine', 'warning');
         return;
     }
 
     if (!selectedFolderId && !newFolderName) {
-        alert('Seleziona una cartella o creane una nuova');
+        showAlert('Seleziona una cartella o creane una nuova', 'warning');
         return;
     }
 
@@ -601,11 +622,11 @@ async function saveImageToGallery() {
 
         // Success
         closeSaveModal();
-        alert('Immagine salvata con successo!');
+        showAlert('Immagine salvata con successo!', 'success');
 
     } catch (err) {
         console.error('Error saving image:', err);
-        alert('Errore nel salvataggio: ' + err.message);
+        showAlert('Errore nel salvataggio: ' + err.message, 'error');
     } finally {
         els.confirmSaveBtn.disabled = false;
         els.confirmSaveBtn.textContent = 'Salva';

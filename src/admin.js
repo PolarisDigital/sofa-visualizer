@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { getSession, signOut } from './supabase.js';
+import { showAlert, showConfirm } from './modal.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Admin check
     const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
     if (!ADMIN_EMAILS.includes(session.user.email)) {
-        alert('Accesso non autorizzato');
+        await showAlert('Accesso non autorizzato', 'error');
         window.location.href = '/';
         return;
     }
@@ -263,7 +264,7 @@ async function createFolder() {
         await loadFolders();
     } catch (err) {
         console.error('Error creating folder:', err);
-        alert('Errore nella creazione della cartella');
+        showAlert('Errore nella creazione della cartella', 'error');
     }
 }
 
@@ -272,7 +273,15 @@ async function deleteCurrentFolder() {
     if (currentFolderId === 'all') return;
 
     const folder = folders.find(f => f.id === currentFolderId);
-    if (!confirm(`Eliminare la cartella "${folder?.name}" e tutte le sue immagini?`)) return;
+    const confirmed = await showConfirm(
+        `Eliminare la cartella "${folder?.name}" e tutte le sue immagini?`,
+        {
+            confirmText: 'Elimina',
+            cancelText: 'Annulla',
+            danger: true
+        }
+    );
+    if (!confirmed) return;
 
     try {
         const { error } = await supabase
@@ -288,7 +297,7 @@ async function deleteCurrentFolder() {
         selectFolder('all');
     } catch (err) {
         console.error('Error deleting folder:', err);
-        alert('Errore nell\'eliminazione della cartella');
+        showAlert('Errore nell\'eliminazione della cartella', 'error');
     }
 }
 
@@ -314,7 +323,12 @@ window.downloadImage = async (imageUrl, imageName) => {
 };
 
 window.deleteImage = async (imageId) => {
-    if (!confirm('Eliminare questa immagine?')) return;
+    const confirmed = await showConfirm('Eliminare questa immagine?', {
+        confirmText: 'Elimina',
+        cancelText: 'Annulla',
+        danger: true
+    });
+    if (!confirmed) return;
 
     try {
         const { error } = await supabase
@@ -328,7 +342,7 @@ window.deleteImage = async (imageId) => {
         await loadFolders(); // Update counts
     } catch (err) {
         console.error('Error deleting image:', err);
-        alert('Errore nell\'eliminazione dell\'immagine');
+        showAlert('Errore nell\'eliminazione dell\'immagine', 'error');
     }
 };
 
@@ -364,13 +378,13 @@ async function uploadLogo(event) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-        alert('Seleziona un\'immagine valida');
+        showAlert('Seleziona un\'immagine valida', 'error');
         return;
     }
 
     // Max 2MB
     if (file.size > 2 * 1024 * 1024) {
-        alert('Il logo deve essere al massimo 2MB');
+        showAlert('Il logo deve essere al massimo 2MB', 'error');
         return;
     }
 
@@ -404,11 +418,11 @@ async function uploadLogo(event) {
         logoEls.currentLogo.style.display = 'block';
         logoEls.logoPlaceholder.style.display = 'none';
 
-        alert('Logo aggiornato con successo!');
+        showAlert('Logo aggiornato con successo!', 'success');
 
     } catch (err) {
         console.error('Error uploading logo:', err);
-        alert('Errore nel caricamento del logo');
+        showAlert('Errore nel caricamento del logo', 'error');
     } finally {
         logoEls.uploadLogoBtn.textContent = 'Carica Logo';
         logoEls.uploadLogoBtn.disabled = false;

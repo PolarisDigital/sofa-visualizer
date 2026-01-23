@@ -322,6 +322,7 @@
 
     <script type="module">
         import { getSession } from '/src/supabase.js';
+        import { showAlert, showConfirm, showPrompt } from '/src/modal.js';
 
         // Wrap in async IIFE to avoid top-level await
         (async function init() {
@@ -338,7 +339,7 @@
             // Admin check
             const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
             if (!ADMIN_EMAILS.includes(session.user.email)) {
-                alert('Accesso non autorizzato');
+                await showAlert('Accesso non autorizzato', 'error');
                 window.location.href = '/';
                 return;
             }
@@ -458,12 +459,12 @@
                 const role = els.newUserRole.value;
 
                 if (!email || !password) {
-                    alert('Email e password sono obbligatori');
+                    showAlert('Email e password sono obbligatori', 'warning');
                     return;
                 }
 
                 if (password.length < 6) {
-                    alert('La password deve essere di almeno 6 caratteri');
+                    showAlert('La password deve essere di almeno 6 caratteri', 'warning');
                     return;
                 }
 
@@ -483,10 +484,10 @@
                     clearForm();
                     els.createUserForm.classList.remove('active');
                     await loadUsers();
-                    alert('Utente creato con successo!');
+                    showAlert('Utente creato con successo!', 'success');
                 } catch (err) {
                     console.error('Error creating user:', err);
-                    alert('Errore: ' + err.message);
+                    showAlert('Errore: ' + err.message, 'error');
                 } finally {
                     els.confirmCreate.textContent = 'Crea Utente';
                     els.confirmCreate.disabled = false;
@@ -495,7 +496,11 @@
 
             window.toggleRole = async (userId, currentRole) => {
                 const newRole = currentRole === 'admin' ? 'venditore' : 'admin';
-                if (!confirm(`Cambiare ruolo a "${newRole}"?`)) return;
+                const confirmed = await showConfirm(`Cambiare ruolo a "${newRole}"?`, {
+                    confirmText: 'Cambia',
+                    cancelText: 'Annulla'
+                });
+                if (!confirmed) return;
 
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/role`, {
@@ -510,18 +515,23 @@
                     await loadUsers();
                 } catch (err) {
                     console.error('Error updating role:', err);
-                    alert('Errore: ' + err.message);
+                    showAlert('Errore: ' + err.message, 'error');
                 }
             };
 
             window.deleteUser = async (userId, userEmail) => {
                 // Self-delete protection
                 if (session.user.id === userId) {
-                    alert('Non puoi eliminare te stesso!');
+                    showAlert('Non puoi eliminare te stesso!', 'warning');
                     return;
                 }
 
-                if (!confirm('Eliminare questo utente? L\'azione è irreversibile.')) return;
+                const confirmed = await showConfirm('Eliminare questo utente? L\'azione è irreversibile.', {
+                    confirmText: 'Elimina',
+                    cancelText: 'Annulla',
+                    danger: true
+                });
+                if (!confirmed) return;
 
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
@@ -532,19 +542,26 @@
                     if (!data.success) throw new Error(data.error);
 
                     await loadUsers();
-                    alert('Utente eliminato');
+                    showAlert('Utente eliminato', 'success');
                 } catch (err) {
                     console.error('Error deleting user:', err);
-                    alert('Errore: ' + err.message);
+                    showAlert('Errore: ' + err.message, 'error');
                 }
             };
 
             window.changePassword = async (userId) => {
-                const newPassword = prompt('Inserisci la nuova password (minimo 6 caratteri):');
+                const newPassword = await showPrompt('Inserisci la nuova password:', {
+                    title: 'Cambia Password',
+                    placeholder: 'Nuova password',
+                    inputType: 'password',
+                    confirmText: 'Cambia',
+                    cancelText: 'Annulla',
+                    minLength: 6
+                });
                 if (!newPassword) return;
 
                 if (newPassword.length < 6) {
-                    alert('La password deve essere di almeno 6 caratteri');
+                    showAlert('La password deve essere di almeno 6 caratteri', 'warning');
                     return;
                 }
 
@@ -558,10 +575,10 @@
                     const data = await response.json();
                     if (!data.success) throw new Error(data.error);
 
-                    alert('Password aggiornata con successo!');
+                    showAlert('Password aggiornata con successo!', 'success');
                 } catch (err) {
                     console.error('Error changing password:', err);
-                    alert('Errore: ' + err.message);
+                    showAlert('Errore: ' + err.message, 'error');
                 }
             };
 
