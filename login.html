@@ -253,17 +253,13 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-icon">🪑</div>
                 <div class="login-logo" id="loginLogoContainer">
                     <span class="logo-text">Fabric<span>AI</span></span>
                 </div>
                 <p class="login-subtitle">Visualizza il tuo divano con nuovi tessuti</p>
             </div>
 
-            <div class="login-tabs">
-                <div class="login-tab active" data-tab="login">Accedi</div>
-                <div class="login-tab" data-tab="signup">Registrati</div>
-            </div>
+
 
             <div class="login-body">
                 <div id="alertMessage" class="alert-message"></div>
@@ -281,23 +277,6 @@
                     <button type="submit" class="login-btn">Accedi</button>
                 </form>
 
-                <!-- Signup Form (hidden by default) -->
-                <form id="signupForm" style="display: none;">
-                    <div class="form-group">
-                        <label for="signupEmail">Email</label>
-                        <input type="email" id="signupEmail" placeholder="nome@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" placeholder="Minimo 6 caratteri" required
-                            minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPasswordConfirm">Conferma Password</label>
-                        <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="login-btn">Crea Account</button>
-                </form>
 
                 <div class="login-footer">
                     <a href="/">
@@ -314,7 +293,7 @@
 
     <script type="module">
         import { signIn, signUp, getSession, supabase } from '/src/supabase.js';
-        
+
         // Load custom logo
         async function loadLogo() {
             try {
@@ -325,7 +304,7 @@
                         const container = document.getElementById('loginLogoContainer');
                         container.innerHTML = `<img src="${data.publicUrl}?t=${Date.now()}" alt="Logo" style="max-height: 50px; max-width: 200px; object-fit: contain;">`;
                     };
-                    img.onerror = () => {}; // Keep default text
+                    img.onerror = () => { }; // Keep default text
                     img.src = data.publicUrl + '?t=' + Date.now();
                 }
             } catch (e) { /* Keep default */ }
@@ -339,18 +318,6 @@
             }
         });
 
-        // Tab switching
-        document.querySelectorAll('.login-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                const isLogin = tab.dataset.tab === 'login';
-                document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
-                document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block';
-                hideAlert();
-            });
-        });
 
         // Login form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -366,25 +333,6 @@
             }
         });
 
-        // Signup form
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
-
-            if (password !== confirmPassword) {
-                showAlert('Le password non corrispondono', 'error');
-                return;
-            }
-
-            try {
-                await signUp(email, password);
-                showAlert('Account creato! Controlla la tua email per confermare.', 'success');
-            } catch (error) {
-                showAlert(error.message, 'error');
-            }
-        });
 
         function showAlert(message, type = 'error') {
             const el = document.getElementById('alertMessage');
