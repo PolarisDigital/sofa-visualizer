@@ -23,12 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Admin check
+    // Check if user is admin (for hiding admin-only features)
     const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
-    if (!ADMIN_EMAILS.includes(session.user.email)) {
-        await showAlert('Accesso non autorizzato', 'error');
-        window.location.href = '/';
-        return;
+    const isAdmin = ADMIN_EMAILS.includes(session.user.email);
+
+    // Hide admin-only sections for venditori
+    if (!isAdmin) {
+        // Hide logo upload section
+        const logoSection = document.querySelector('.setting-item:has(#logoInput)');
+        if (logoSection) logoSection.style.display = 'none';
+
+        // Hide user management link
+        const usersLink = document.querySelector('a[href="/users.html"]');
+        if (usersLink) usersLink.parentElement.style.display = 'none';
     }
 
     // Initialize DOM elements
