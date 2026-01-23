@@ -413,7 +413,7 @@
             font-size: 0.7rem;
         }
 
-        /* ===== MOBILE ADMIN STYLES ===== */
+        /* ===== MOBILE ADMIN STYLES - Drill-Down Navigation ===== */
         @media (max-width: 767px) {
             .admin-layout {
                 flex-direction: column;
@@ -421,61 +421,99 @@
                 gap: 0;
                 height: 100vh;
                 height: 100dvh;
+                overflow: hidden;
             }
 
-            /* Hide sidebar by default on mobile */
+            /* Folders sidebar - VISIBLE by default on mobile */
             .folders-sidebar {
-                display: none;
+                display: flex;
+                flex-direction: column;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: 60px;
+                bottom: 0;
                 width: 100%;
                 min-width: 100%;
                 border-radius: 0;
                 z-index: 50;
                 overflow-y: auto;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
             }
 
-            .folders-sidebar.mobile-active {
-                display: flex;
-            }
-
-            /* Settings section separate for tab */
-            .sidebar-settings {
+            /* Hide folders when viewing images */
+            .folders-sidebar.hide-for-gallery {
                 display: none;
-                position: fixed;
+            }
+
+            .sidebar-header {
+                padding: 16px 20px;
+                position: sticky;
                 top: 0;
-                left: 0;
-                right: 0;
-                bottom: 60px;
-                width: 100%;
-                background: var(--island-bg);
+                background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
-                z-index: 50;
-                overflow-y: auto;
-                padding: 20px;
+                z-index: 10;
             }
 
-            .sidebar-settings.mobile-active {
-                display: block;
+            .sidebar-header h2 {
+                font-size: 1rem;
             }
 
-            /* Gallery main - full screen */
+            .folders-list {
+                padding: 12px 16px;
+            }
+
+            .folder-item {
+                padding: 16px;
+                margin-bottom: 10px;
+                background: rgba(255, 255, 255, 0.6);
+                border-radius: 14px;
+            }
+
+            .folder-item.active {
+                background: var(--accent);
+            }
+
+            .folder-name {
+                font-size: 1rem;
+            }
+
+            .folder-count {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+
+            /* Settings section - part of sidebar scroll on mobile */
+            .sidebar-settings {
+                border-top: 1px solid rgba(0, 0, 0, 0.08);
+                margin-top: auto;
+            }
+
+            .sidebar-settings .sidebar-header {
+                background: transparent;
+                position: relative;
+            }
+
+            .settings-content {
+                padding: 0 16px 20px;
+            }
+
+            /* Gallery main - HIDDEN by default, shown when folder selected */
             .gallery-main {
                 display: none;
+                flex-direction: column;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: 60px;
+                bottom: 0;
                 padding: 0;
                 overflow-y: auto;
+                z-index: 60;
             }
 
-            .gallery-main.mobile-active {
+            .gallery-main.show-gallery {
                 display: flex;
             }
 
@@ -485,10 +523,33 @@
                 z-index: 10;
                 border-radius: 0;
                 padding: 12px 16px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
             }
 
             .gallery-header h1 {
-                font-size: 0.95rem;
+                font-size: 1rem;
+            }
+
+            /* Mobile back button */
+            .mobile-back-btn {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 0.9rem;
+                font-weight: 500;
+                cursor: pointer;
+                padding: 0;
+                margin-bottom: 8px;
+            }
+
+            .mobile-back-btn svg {
+                width: 18px;
+                height: 18px;
             }
 
             .back-link {
@@ -497,6 +558,7 @@
 
             .gallery-content {
                 padding: 16px;
+                padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
             }
 
             /* 2-column grid on mobile */
@@ -530,59 +592,18 @@
                 height: 28px;
             }
 
-            /* Mobile Tab Bar */
+            /* Hide tab bar - not needed with drill-down */
             .mobile-tab-bar {
-                display: flex;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 60px;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border-top: 1px solid rgba(0, 0, 0, 0.08);
-                z-index: 100;
-                padding-bottom: env(safe-area-inset-bottom, 0px);
-            }
-
-            .tab-item {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 4px;
-                color: var(--text-muted);
-                text-decoration: none;
-                font-size: 0.65rem;
-                font-weight: 500;
-                transition: all 0.2s;
-                cursor: pointer;
-                border: none;
-                background: none;
-            }
-
-            .tab-item.active {
-                color: var(--accent);
-            }
-
-            .tab-item svg {
-                width: 22px;
-                height: 22px;
-            }
-
-            .sidebar-header {
-                padding: 16px;
-            }
-
-            .folder-item {
-                padding: 12px 14px;
+                display: none !important;
             }
         }
 
-        /* Hide tab bar on desktop */
+        /* Hide tab bar and mobile-back on desktop */
         .mobile-tab-bar {
+            display: none;
+        }
+
+        .mobile-back-btn {
             display: none;
         }
     </style>
@@ -680,6 +701,12 @@
         <main class="gallery-main">
             <div class="gallery-header">
                 <div>
+                    <button class="mobile-back-btn" id="mobileBackBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        Cartelle
+                    </button>
                     <a href="/" class="back-link">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -748,59 +775,46 @@
     </nav>
 
     <script>
-        // Mobile Tab Switching
-        function initMobileTabs() {
+        // Mobile Drill-Down Navigation
+        function initMobileDrillDown() {
             const isMobile = window.matchMedia('(max-width: 767px)').matches;
             if (!isMobile) return;
 
-            const tabs = document.querySelectorAll('.tab-item');
             const sidebar = document.querySelector('.folders-sidebar');
             const gallery = document.querySelector('.gallery-main');
-            const settings = document.querySelector('.sidebar-settings');
+            const backBtn = document.getElementById('mobileBackBtn');
 
-            // Set initial state - Photos active
-            gallery.classList.add('mobile-active');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-
-                    // Hide all sections
-                    sidebar.classList.remove('mobile-active');
-                    gallery.classList.remove('mobile-active');
-                    settings.classList.remove('mobile-active');
-
-                    // Show selected section
-                    if (tabName === 'folders') {
-                        sidebar.classList.add('mobile-active');
-                    } else if (tabName === 'photos') {
-                        gallery.classList.add('mobile-active');
-                    } else if (tabName === 'settings') {
-                        settings.classList.add('mobile-active');
-                    }
+            // Back button - return to folders
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    gallery.classList.remove('show-gallery');
+                    sidebar.classList.remove('hide-for-gallery');
                 });
-            });
+            }
 
-            // When folder is clicked, switch to photos tab
+            // Folder click - show gallery
             document.addEventListener('click', (e) => {
                 const folderItem = e.target.closest('.folder-item');
                 if (folderItem && isMobile) {
                     setTimeout(() => {
-                        const photosTab = document.querySelector('[data-tab="photos"]');
-                        photosTab.click();
+                        sidebar.classList.add('hide-for-gallery');
+                        gallery.classList.add('show-gallery');
                     }, 100);
                 }
             });
         }
 
         // Run on DOM ready
-        document.addEventListener('DOMContentLoaded', initMobileTabs);
+        document.addEventListener('DOMContentLoaded', initMobileDrillDown);
         // Also run on resize
-        window.addEventListener('resize', initMobileTabs);
+        window.addEventListener('resize', () => {
+            // Reset state on resize to desktop
+            const isMobile = window.matchMedia('(max-width: 767px)').matches;
+            if (!isMobile) {
+                document.querySelector('.folders-sidebar')?.classList.remove('hide-for-gallery');
+                document.querySelector('.gallery-main')?.classList.remove('show-gallery');
+            }
+        });
     </script>
 
     <script type="module" src="/src/admin.js"></script>
