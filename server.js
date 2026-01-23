@@ -303,6 +303,33 @@ app.put('/api/admin/users/:id/role', async (req, res) => {
     }
 });
 
+// PUT /api/admin/users/:id/password - Change user password
+app.put('/api/admin/users/:id/password', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+        return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
+    }
+
+    try {
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(id, {
+            password: password
+        });
+
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating password:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Sofa Visualizer API running on port ${PORT}`);
     console.log(`   POST /api/gemini/edit - Image editing with Gemini`);
@@ -310,4 +337,5 @@ app.listen(PORT, () => {
     console.log(`   POST /api/admin/users - Create user`);
     console.log(`   DELETE /api/admin/users/:id - Delete user`);
     console.log(`   PUT /api/admin/users/:id/role - Update role`);
+    console.log(`   PUT /api/admin/users/:id/password - Change password`);
 });

@@ -423,6 +423,12 @@
                                     <td>${user.last_sign_in ? formatDate(user.last_sign_in) : 'Mai'}</td>
                                     <td>
                                         <div class="user-actions">
+                                            <button class="btn-icon" onclick="changePassword('${user.id}')" title="Cambia password">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                                </svg>
+                                            </button>
                                             <button class="btn-icon" onclick="toggleRole('${user.id}', '${user.role}')" title="Cambia ruolo">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -508,7 +514,13 @@
                 }
             };
 
-            window.deleteUser = async (userId) => {
+            window.deleteUser = async (userId, userEmail) => {
+                // Self-delete protection
+                if (session.user.id === userId) {
+                    alert('Non puoi eliminare te stesso!');
+                    return;
+                }
+
                 if (!confirm('Eliminare questo utente? L\'azione è irreversibile.')) return;
 
                 try {
@@ -523,6 +535,32 @@
                     alert('Utente eliminato');
                 } catch (err) {
                     console.error('Error deleting user:', err);
+                    alert('Errore: ' + err.message);
+                }
+            };
+
+            window.changePassword = async (userId) => {
+                const newPassword = prompt('Inserisci la nuova password (minimo 6 caratteri):');
+                if (!newPassword) return;
+
+                if (newPassword.length < 6) {
+                    alert('La password deve essere di almeno 6 caratteri');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/password`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: newPassword })
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.error);
+
+                    alert('Password aggiornata con successo!');
+                } catch (err) {
+                    console.error('Error changing password:', err);
                     alert('Errore: ' + err.message);
                 }
             };
