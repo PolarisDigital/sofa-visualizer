@@ -913,20 +913,27 @@ body {
         border-radius: 10px;
     }
 
-    /* === STYLE SELECTOR - Compact pills === */
+    /* === STYLE SELECTOR - Inline compact === */
     .control-section:has(.toggle-switch) {
-        background: rgba(255, 255, 255, 0.8);
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        border: none;
+    }
+
+    .control-section:has(.toggle-switch) .section-title {
+        display: none;
     }
 
     .toggle-switch {
         margin-bottom: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 4px;
     }
 
     .toggle-option {
-        padding: 8px 16px;
+        padding: 8px 20px;
         font-size: 0.7rem;
         border-radius: 8px;
     }
@@ -936,16 +943,20 @@ body {
         display: none;
     }
 
-    /* === 3. CANVAS AREA === */
+    /* === 3. CANVAS AREA - Hidden until result === */
     .main-canvas {
         order: 3;
         width: 100%;
         flex: 1;
         min-height: 0;
-        /* Allow shrinking */
-        display: flex;
+        display: none !important;
+        /* Hide completely on mobile */
         flex-direction: column;
         gap: 8px;
+    }
+
+    .main-canvas.has-result {
+        display: flex !important;
     }
 
     /* Canvas header with actions - hidden until image generated */
@@ -1057,7 +1068,11 @@ body {
         font-size: 0.6rem;
         margin-top: 6px;
         text-align: center;
-        color: white;
+        color: white !important;
+    }
+
+    .credits a {
+        color: white !important;
     }
 
     /* === MODALS === */
