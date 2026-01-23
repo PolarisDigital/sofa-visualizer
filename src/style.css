@@ -681,8 +681,8 @@ body {
    ============================================ */
 @media (min-width: 768px) and (max-width: 1024px) {
     .app-layout {
-        padding: 32px;
-        gap: 24px;
+        padding: 40px;
+        gap: 28px;
     }
 
     .sidebar {
