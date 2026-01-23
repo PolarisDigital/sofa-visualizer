@@ -276,7 +276,7 @@
                     </svg>
                     Torna alla Galleria
                 </a>
-                <h1>👥 Gestione Utenti</h1>
+                <h1>Gestione Utenti</h1>
             </div>
             <button class="btn-primary" id="toggleCreateForm">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -383,7 +383,7 @@
                     console.error('Error loading users:', err);
                     els.usersContainer.innerHTML = `
                         <div class="empty-users">
-                            <div class="icon">⚠️</div>
+                            <div class="icon"></div>
                             <p>Errore nel caricamento: ${err.message}</p>
                         </div>
                     `;
@@ -394,7 +394,7 @@
                 if (users.length === 0) {
                     els.usersContainer.innerHTML = `
                         <div class="empty-users">
-                            <div class="icon">👥</div>
+                            <div class="icon"></div>
                             <p>Nessun utente trovato</p>
                         </div>
                     `;
