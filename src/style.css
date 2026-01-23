@@ -45,26 +45,37 @@
     }
 }
 
+/* HTML - Scroll lock */
+html {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
 body {
     /* THIN MODERN FONT - Orbai Style */
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 300;
-    /* Thinner base weight */
 
-    /* ANIMATED MESH GRADIENT - Edge-to-Edge */
+    /* ANIMATED MESH GRADIENT */
     background: linear-gradient(-45deg, #eff6ff, #dbeafe, #bfdbfe, #93c5fd);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     background-color: #3b82f6;
     background-attachment: fixed;
 
-    /* Full viewport coverage */
-    min-height: 100vh;
-    min-height: 100dvh;
-    /* Dynamic viewport for iOS */
+    /* Lock to viewport - NO SCROLL */
+    height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 
     -webkit-font-smoothing: antialiased;
     color: var(--text-primary);
