@@ -326,15 +326,34 @@
         }
 
         .btn-sm.primary {
-            background: var(--text-primary);
+            background: rgba(37, 99, 235, 0.9);
             color: white;
             border: none;
         }
 
+        .btn-sm.primary:hover {
+            background: rgba(37, 99, 235, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
         .btn-sm.secondary {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.6);
             color: var(--text-secondary);
             border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-sm.secondary:hover {
+            background: white;
+        }
+
+        /* SVG Icon in headers */
+        .header-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+            vertical-align: middle;
+            margin-right: 6px;
         }
 
         /* Settings Section */
@@ -401,7 +420,12 @@
         <!-- Sidebar: Folders -->
         <aside class="folders-sidebar">
             <div class="sidebar-header">
-                <h2>📁 Cartelle</h2>
+                <h2>
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                    Cartelle
+                </h2>
                 <button class="btn-add-folder" id="addFolderBtn" title="Nuova cartella">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19" />
@@ -421,7 +445,14 @@
 
                 <!-- All Images option -->
                 <div class="folder-item active" data-folder-id="all">
-                    <span class="folder-icon">🖼️</span>
+                    <span class="folder-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                    </span>
                     <span class="folder-name">Tutte le immagini</span>
                     <span class="folder-count" id="totalCount">0</span>
                 </div>
@@ -433,7 +464,14 @@
             <!-- Settings Section -->
             <div class="sidebar-settings">
                 <div class="sidebar-header">
-                    <h2>⚙️ Impostazioni</h2>
+                    <h2>
+                        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                        Impostazioni
+                    </h2>
                 </div>
                 <div class="settings-content">
                     <div class="setting-item">
@@ -441,7 +479,12 @@
                         <div class="logo-preview" id="logoPreview">
                             <img id="currentLogo" src="" alt="Logo" style="display: none;">
                             <div class="logo-placeholder" id="logoPlaceholder">
-                                <span>📷</span>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" style="opacity: 0.5;">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
                                 <small>Nessun logo</small>
                             </div>
                         </div>

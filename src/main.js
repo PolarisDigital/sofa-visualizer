@@ -133,6 +133,8 @@ function updateGenerateButton() {
 
 // --- Company Settings (Logo) ---
 async function loadCompanySettings() {
+    const logoContainer = document.getElementById('logoContainer');
+
     try {
         // Load logo from Supabase Storage
         const { data } = supabase.storage
@@ -143,7 +145,6 @@ async function loadCompanySettings() {
         const response = await fetch(data.publicUrl, { method: 'HEAD' });
 
         if (response.ok) {
-            const logoContainer = document.getElementById('logoContainer');
             if (logoContainer) {
                 // Add cache buster to prevent stale logos
                 logoContainer.innerHTML = `<img src="${data.publicUrl}?t=${Date.now()}" alt="Company Logo" class="custom-logo">`;
@@ -151,6 +152,11 @@ async function loadCompanySettings() {
         }
     } catch (err) {
         console.log('No custom logo found, using default');
+    } finally {
+        // Always show logo container with fade-in
+        if (logoContainer) {
+            logoContainer.style.opacity = '1';
+        }
     }
 }
 
