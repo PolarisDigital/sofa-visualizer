@@ -46,9 +46,9 @@ app.post('/api/gemini/edit', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(googleApiKey);
 
-        // Use Gemini 2.5 Flash Image - More stable and faster
+        // Use Gemini 2.5 Flash Image - Stable and fast
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-image-preview",
+            model: "gemini-2.5-flash-image",
             generationConfig: {
                 responseModalities: ["image", "text"],
             }
