@@ -46,9 +46,9 @@ app.post('/api/gemini/edit', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(googleApiKey);
 
-        // Use Gemini 3 Pro Image Preview - Best quality for image generation
+        // Use Gemini 2.5 Flash Image - More stable and faster
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-pro-image-preview",
+            model: "gemini-2.5-flash-image-preview",
             generationConfig: {
                 responseModalities: ["image", "text"],
             }
