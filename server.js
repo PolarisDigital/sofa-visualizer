@@ -102,22 +102,43 @@ CRITICAL REQUIREMENTS:
 Generate the edited image maintaining photorealistic quality.`;
         }
 
-        // Send BOTH images to Gemini
-        const result = await model.generateContent([
-            {
-                inlineData: {
-                    mimeType: "image/jpeg",
-                    data: sofaImageBase64
+        // Send BOTH images to Gemini with retry logic
+        let result;
+        let lastError;
+        const maxRetries = 3;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`Attempt ${attempt}/${maxRetries}...`);
+                result = await model.generateContent([
+                    {
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: sofaImageBase64
+                        }
+                    },
+                    {
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: fabricImageBase64
+                        }
+                    },
+                    editPrompt
+                ]);
+                break; // Success, exit retry loop
+            } catch (retryError) {
+                lastError = retryError;
+                console.log(`Attempt ${attempt} failed: ${retryError.message}`);
+                if (attempt < maxRetries && retryError.message.includes('503')) {
+                    // Wait before retry (exponential backoff)
+                    const waitTime = attempt * 2000;
+                    console.log(`Waiting ${waitTime}ms before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                } else if (attempt === maxRetries) {
+                    throw lastError;
                 }
-            },
-            {
-                inlineData: {
-                    mimeType: "image/jpeg",
-                    data: fabricImageBase64
-                }
-            },
-            editPrompt
-        ]);
+            }
+        }
 
         const response = await result.response;
 
