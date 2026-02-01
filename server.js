@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 
 // Gemini image editing endpoint - V2: Dual Image (Sofa + Fabric Texture)
 app.post('/api/gemini/edit', async (req, res) => {
-    const { sofaImageBase64, fabricImageBase64, apiKey, outputMode } = req.body;
+    const { sofaImageBase64, fabricImageBase64, apiKey, outputMode, userEmail } = req.body;
 
     // Use provided API key or environment variable
     const googleApiKey = apiKey || process.env.GOOGLE_API_KEY;
@@ -38,6 +38,16 @@ app.post('/api/gemini/edit', async (req, res) => {
         return res.status(400).json({
             success: false,
             error: 'Both sofa image and fabric texture image are required.'
+        });
+    }
+
+    // Check usage limits before proceeding
+    const limitCheck = await checkUsageLimits();
+    if (!limitCheck.allowed) {
+        return res.status(429).json({
+            success: false,
+            error: limitCheck.reason,
+            limitReached: true
         });
     }
 
@@ -147,6 +157,10 @@ Generate the edited image maintaining photorealistic quality.`;
             for (const part of response.candidates[0].content.parts) {
                 if (part.inlineData) {
                     console.log('Image generated successfully');
+
+                    // Track usage for billing
+                    await trackUsage(userEmail);
+
                     res.json({
                         success: true,
                         image: part.inlineData.data
@@ -190,6 +204,98 @@ const supabaseAdmin = supabaseUrl && supabaseServiceKey
         }
     })
     : null;
+
+// ============================================
+// USAGE TRACKING HELPERS
+// ============================================
+
+// Check if usage limit has been reached
+async function checkUsageLimits() {
+    if (!supabaseAdmin) return { allowed: true };
+
+    try {
+        // Get current limits
+        const { data: settings } = await supabaseAdmin
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'usage_limits')
+            .single();
+
+        if (!settings?.value) return { allowed: true };
+
+        const { daily_limit, weekly_limit } = settings.value;
+
+        // If no limits set, allow
+        if (!daily_limit && !weekly_limit) return { allowed: true };
+
+        const now = new Date();
+
+        // Check daily limit
+        if (daily_limit) {
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            const { count } = await supabaseAdmin
+                .from('api_usage')
+                .select('*', { count: 'exact', head: true })
+                .gte('created_at', startOfDay);
+
+            if (count >= daily_limit) {
+                return {
+                    allowed: false,
+                    reason: `Limite giornaliero raggiunto (${count}/${daily_limit} immagini)`
+                };
+            }
+        }
+
+        // Check weekly limit
+        if (weekly_limit) {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const { count } = await supabaseAdmin
+                .from('api_usage')
+                .select('*', { count: 'exact', head: true })
+                .gte('created_at', startOfWeek.toISOString());
+
+            if (count >= weekly_limit) {
+                return {
+                    allowed: false,
+                    reason: `Limite settimanale raggiunto (${count}/${weekly_limit} immagini)`
+                };
+            }
+        }
+
+        return { allowed: true };
+    } catch (err) {
+        console.error('Error checking limits:', err);
+        return { allowed: true }; // Allow on error
+    }
+}
+
+// Track API usage
+async function trackUsage(userEmail) {
+    if (!supabaseAdmin) return;
+
+    try {
+        // Get cost per image from settings
+        const { data: settings } = await supabaseAdmin
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'usage_limits')
+            .single();
+
+        const costPerImage = settings?.value?.cost_per_image || 0.003;
+
+        await supabaseAdmin
+            .from('api_usage')
+            .insert({
+                user_email: userEmail || 'anonymous',
+                cost_estimate: costPerImage
+            });
+    } catch (err) {
+        console.error('Error tracking usage:', err);
+    }
+}
 
 // GET /api/admin/users - List all users
 app.get('/api/admin/users', async (req, res) => {
@@ -351,6 +457,143 @@ app.put('/api/admin/users/:id/password', async (req, res) => {
     }
 });
 
+// ============================================
+// USAGE STATS ENDPOINTS (Admin)
+// ============================================
+
+// GET /api/admin/usage/stats - Get usage statistics
+app.get('/api/admin/usage/stats', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    try {
+        const now = new Date();
+
+        // Start of today
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+        // Start of week (Sunday)
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        // Start of month
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+        // Get counts
+        const [dailyResult, weeklyResult, monthlyResult, totalResult] = await Promise.all([
+            supabaseAdmin.from('api_usage').select('*', { count: 'exact', head: true }).gte('created_at', startOfDay),
+            supabaseAdmin.from('api_usage').select('*', { count: 'exact', head: true }).gte('created_at', startOfWeek.toISOString()),
+            supabaseAdmin.from('api_usage').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth),
+            supabaseAdmin.from('api_usage').select('*', { count: 'exact', head: true })
+        ]);
+
+        // Get settings for cost calculation
+        const { data: settings } = await supabaseAdmin
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'usage_limits')
+            .single();
+
+        const costPerImage = settings?.value?.cost_per_image || 0.003;
+        const dailyLimit = settings?.value?.daily_limit || null;
+        const weeklyLimit = settings?.value?.weekly_limit || null;
+
+        // Get recent usage (last 30 days by day)
+        const thirtyDaysAgo = new Date(now);
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+
+        const { data: recentUsage } = await supabaseAdmin
+            .from('api_usage')
+            .select('created_at')
+            .gte('created_at', thirtyDaysAgo.toISOString())
+            .order('created_at', { ascending: true });
+
+        // Group by date
+        const usageByDate = {};
+        (recentUsage || []).forEach(item => {
+            const date = item.created_at.split('T')[0];
+            usageByDate[date] = (usageByDate[date] || 0) + 1;
+        });
+
+        res.json({
+            success: true,
+            stats: {
+                today: dailyResult.count || 0,
+                thisWeek: weeklyResult.count || 0,
+                thisMonth: monthlyResult.count || 0,
+                total: totalResult.count || 0,
+                costPerImage,
+                dailyLimit,
+                weeklyLimit,
+                costToday: (dailyResult.count || 0) * costPerImage,
+                costThisWeek: (weeklyResult.count || 0) * costPerImage,
+                costThisMonth: (monthlyResult.count || 0) * costPerImage,
+                usageByDate
+            }
+        });
+    } catch (error) {
+        console.error('Error getting usage stats:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// GET /api/admin/usage/limits - Get current limits
+app.get('/api/admin/usage/limits', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'usage_limits')
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        res.json({
+            success: true,
+            limits: data?.value || { daily_limit: null, weekly_limit: null, cost_per_image: 0.003 }
+        });
+    } catch (error) {
+        console.error('Error getting limits:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// PUT /api/admin/usage/limits - Update limits
+app.put('/api/admin/usage/limits', async (req, res) => {
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: 'Admin client not configured' });
+    }
+
+    const { daily_limit, weekly_limit, cost_per_image } = req.body;
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('app_settings')
+            .upsert({
+                key: 'usage_limits',
+                value: {
+                    daily_limit: daily_limit || null,
+                    weekly_limit: weekly_limit || null,
+                    cost_per_image: cost_per_image || 0.003
+                },
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating limits:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Sofa Visualizer API running on port ${PORT}`);
     console.log(`   POST /api/gemini/edit - Image editing with Gemini`);
@@ -359,4 +602,7 @@ app.listen(PORT, () => {
     console.log(`   DELETE /api/admin/users/:id - Delete user`);
     console.log(`   PUT /api/admin/users/:id/role - Update role`);
     console.log(`   PUT /api/admin/users/:id/password - Change password`);
+    console.log(`   GET  /api/admin/usage/stats - Usage statistics`);
+    console.log(`   GET  /api/admin/usage/limits - Get limits`);
+    console.log(`   PUT  /api/admin/usage/limits - Update limits`);
 });
