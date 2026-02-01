@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if user is admin (for hiding admin-only features)
     const ADMIN_EMAILS = ['paolo@polarisdigital.it', 'admin@polarisdigital.it'];
+    const SUPER_ADMIN_EMAILS = ['paolo@polarisdigital.it']; // Only super admin can see usage dashboard
     const isAdmin = ADMIN_EMAILS.includes(session.user.email);
+    const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(session.user.email);
 
     // Hide admin-only sections for venditori
     if (!isAdmin) {
@@ -36,6 +38,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Hide user management link
         const usersLink = document.querySelector('a[href="/users.html"]');
         if (usersLink) usersLink.parentElement.style.display = 'none';
+    }
+
+    // Show super admin link only for super admins
+    if (isSuperAdmin) {
+        const superAdminLink = document.getElementById('superAdminLink');
+        if (superAdminLink) superAdminLink.style.display = 'block';
     }
 
     // Initialize DOM elements
