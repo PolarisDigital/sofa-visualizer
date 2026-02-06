@@ -13,7 +13,8 @@ export default defineConfig({
                 login: resolve(__dirname, 'login.html'),
                 admin: resolve(__dirname, 'admin.html'),
                 users: resolve(__dirname, 'users.html'),
-                superadmin: resolve(__dirname, 'superadmin.html')
+                superadmin: resolve(__dirname, 'superadmin.html'),
+                privacy: resolve(__dirname, 'privacy.html')
             }
         }
     }
