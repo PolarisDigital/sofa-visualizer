@@ -252,8 +252,8 @@ function setupEventListeners() {
                 const blob = await (await fetch(els.mainImage.src)).blob();
                 const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
                 navigator.share({
-                    title: 'Il mio nuovo divano',
-                    text: 'Guarda questo divano con il nuovo tessuto!',
+                    title: 'Configuratore Autlet Sofa',
+                    text: 'Le immagini del configuratore hanno esclusivamente scopo illustrativo. Colori, tessuti e finiture possono differire dal prodotto reale in quanto rappresentati fotograficamente.',
                     files: [file]
                 });
             } else {
@@ -305,8 +305,8 @@ function setupEventListeners() {
                     const blob = await response.blob();
                     const file = new File([blob], 'design.jpg', { type: 'image/jpeg' });
                     await navigator.share({
-                        title: 'Il mio nuovo divano',
-                        text: 'Guarda questo divano con il nuovo tessuto!',
+                        title: 'Configuratore Autlet Sofa',
+                        text: 'Le immagini del configuratore hanno esclusivamente scopo illustrativo. Colori, tessuti e finiture possono differire dal prodotto reale in quanto rappresentati fotograficamente.',
                         files: [file]
                     });
                 } catch (err) {
